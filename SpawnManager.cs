@@ -14,6 +14,8 @@ public class SpawnManager : MonoBehaviour {
     public Transform spawnCornerx, spawnCornery;
     public Player player;
 
+    public GameObject[] spawnRooms;
+
 	void Start () {
         RenderSettings.fogDensity = 0.06f;
         activePool = new List<GameObject>();
@@ -46,9 +48,10 @@ public class SpawnManager : MonoBehaviour {
     void SpawnEnemy()
     {
         
-        int randomx = Random.Range(-42, 42);
-        int randomz = Random.Range(41, 125);
-        Vector3 spawnLoc = new Vector3(randomx, 0, randomz);
+       // int randomx = Random.Range(-42, 42);
+        //int randomz = Random.Range(41, 125);
+        //Vector3 spawnLoc = new Vector3(randomx, 0, randomz);
+        Vector3 spawnLoc = spawnRooms[0].GetComponent<EnemySpawn>().spawn.position;
         GameObject spawnedEnemy;
 
         if (inactivePool.Count >= 1)
@@ -70,7 +73,7 @@ public class SpawnManager : MonoBehaviour {
 
         if(enemiesRemaining != 1)
         {
-            StartCoroutine(SpawnTime(2f));
+            StartCoroutine(SpawnTime(Random.Range(2,8)));
         }
         enemiesRemaining--;
 

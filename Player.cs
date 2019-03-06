@@ -173,6 +173,22 @@ public class Player : MonoBehaviour {
         }
 	}
 
+    public void Beam(bool t)
+    {
+        if (t)
+        {
+            if (skillType == 1)
+            {
+                weapon.Beam();
+            }
+        }
+        else
+        {
+            weapon.EndBeam();
+        }
+
+    }
+
     public void Fire()
     {
  
@@ -199,9 +215,11 @@ public class Player : MonoBehaviour {
             switch (skillType)
             {
                 case 1:
-                    // proj = GameObject.Instantiate(sEffect.GetComponent<Identifier>().projectile, weapon.particleComplete.transform.position, weapon.particleComplete.transform.rotation);
-                    proj = GameObject.Instantiate(skillSet[skillType -1], weapon.particleComplete.transform.position, weapon.particleComplete.transform.rotation);
-                    StartCoroutine(FireTime(0.3f));
+
+                    // proj = GameObject.Instantiate(skillSet[skillType -1], weapon.particleComplete.transform.position, weapon.particleComplete.transform.rotation);
+                    // StartCoroutine(FireTime(0.3f));
+                    weapon.Beam();
+
                     break;
                 case 2:
                     if (target)
@@ -216,6 +234,7 @@ public class Player : MonoBehaviour {
                             GameObject blast = GameObject.Instantiate(skillSet[skillType - 1], target.transform.position, target.transform.rotation);
                             blast.GetComponent<TargetBlast>().target = target;
                         }
+                        ableToFire = false;
                         StartCoroutine(FireTime(1f));
                     }
                     break;
@@ -225,7 +244,7 @@ public class Player : MonoBehaviour {
            // proj.GetComponent<Projectile>().damage += damageModifier;
             //proj.GetComponent<Projectile>().elementType = elementType;
             
-            ableToFire = false;
+            
             
         }
     }
@@ -261,6 +280,7 @@ public class Player : MonoBehaviour {
     }
     public void ClearSpell()
     {
+        Beam(false);
         casting = false;
         if (clear) return;
         clearRenders();
@@ -320,7 +340,7 @@ public class Player : MonoBehaviour {
     IEnumerator PowerShield()
     {
         for (; ;){
-            print("power - " + shieldPower + " - " + maxshieldPower);
+
             shieldText.text = (((float)shieldPower / (float)maxshieldPower) * 100.00).ToString() + " %";
             if (shieldActive)
             {

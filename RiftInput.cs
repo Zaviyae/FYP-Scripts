@@ -46,7 +46,7 @@ public class RiftInput : MonoBehaviour {
                 print(Saved.Count());
                 foreach (TextAsset t in Saved)
                 {
-                    print(t.name);
+                   // print(t.name);
                     List<Vector2> parsedVectors = new List<Vector2>();
                     string parsedstring = t.text.Substring(0, t.text.Length - 1);
                     string[] stringvectors = parsedstring.Split('|');
@@ -134,9 +134,25 @@ public class RiftInput : MonoBehaviour {
                 player.Fire(true);
             }
 
+            if (player.casting && SteamVR_Input._default.inActions.Fire.GetLastStateUp(SteamVR_Input_Sources.RightHand))
+            {
+                
+                if (SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.LeftHand)) return;
+                
+                player.Beam(false);
+            }
+
+            if (!player.casting && SteamVR_Input._default.inActions.Fire.GetStateDown(SteamVR_Input_Sources.RightHand))
+            {
+                if (SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.LeftHand)) return;
+
+                player.Beam(true);
+            }
+
             if (SteamVR_Input._default.inActions.LeftGrip.GetState(SteamVR_Input_Sources.LeftHand))
             {
                 player.ClearSpell();
+                
             }
 
             if (SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.RightHand) && SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.LeftHand))

@@ -7,15 +7,23 @@ public class PowerUpThrow : MonoBehaviour {
     public float yAxis;
     public GameObject[] elemental;
     public GameObject sphere;
-    public bool thrown;
+    public bool thrown, shieldcontact;
     public int elementalID;
     public bool random,set;
     public bool objFloat;
+    public Rigidbody rBody;
     void Start() {
-        
+        rBody = GetComponent<Rigidbody>();
     }
 
     void Update() {
+
+        if (shieldcontact)
+        {
+
+        }
+
+
         if (thrown)
         {
             if (!set)
@@ -73,4 +81,39 @@ public class PowerUpThrow : MonoBehaviour {
 
         thrown = true;
         }
+
+
+    public void ShieldTouch()
+    {
+        GetComponent<Rigidbody>().useGravity = true;
+        shieldcontact = true;
+        objFloat = false;
+
+        // EXPLODE
+        thrown = true;
+    }
+
+    public void ShieldTouch(float x, Collision c, Transform trans)
+    {
+        GetComponent<Rigidbody>().useGravity = true;
+        shieldcontact = true;
+        objFloat = false;
+
+  
+
+      //  print("called");
+        // force is how forcefully we will push the player away from the enemy.
+       // float force = 3000f;
+
+        // If the object we hit is the enemy
+
+        // Calculate Angle Between the collision point and the player
+     //   Vector3 dir = c.contacts[0].point + trans.position;
+        // We then get the opposite (-Vector3) and normalize it
+      //  dir = -dir.normalized;
+        // And finally we add force in the direction of dir and multiply it by force. 
+        // This will push back the player
+      //  GetComponent<Rigidbody>().AddForce(dir * force);
+
+    }
 }

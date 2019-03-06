@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,20 +13,53 @@ public class Projectile : MonoBehaviour {
 
     public int damage = 10;
 
+    public float speed;
+    public GameObject player;
+
+    bool triggered;
+
   //  void Start () {
        // rbody = this.GetComponent<Rigidbody>();
      //   sm = this.GetComponent<SmartMissile>();
        // rbody.AddForce(transform.forward * 400f);
 
-   // }
+   //}
 
     void Start()
     {
-        var physicsMotion = GetComponentInChildren<RFX4_PhysicsMotion>(true);
-        if (physicsMotion != null) physicsMotion.CollisionEnter += CollisionEnter;
+        player = GameObject.FindGameObjectWithTag("Player");
 
-        var raycastCollision = GetComponentInChildren<RFX4_RaycastCollision>(true);
-        if (raycastCollision != null) raycastCollision.CollisionEnter += CollisionEnter;
+        try
+        {
+            var physicsMotion = GetComponentInChildren<RFX4_PhysicsMotion>(true);
+            if (physicsMotion != null) physicsMotion.CollisionEnter += CollisionEnter;
+
+            var raycastCollision = GetComponentInChildren<RFX4_RaycastCollision>(true);
+            if (raycastCollision != null) raycastCollision.CollisionEnter += CollisionEnter;
+        }
+        catch (Exception e)
+        {
+
+        }
+
+
+    }
+
+    private void Update()
+    {
+        if (Vector3.Distance(transform.position, player.transform.position) < 5f)
+        {
+            SlowMo();
+        }
+    }
+
+    private void SlowMo()
+    {
+        if (!triggered)
+        {
+            triggered = true;
+            rbody.velocity = (rbody.velocity * 0.2f);
+        }
     }
 
     private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
@@ -41,38 +75,36 @@ public class Projectile : MonoBehaviour {
                 enemy.TakeDamage(Mathf.RoundToInt(fDamage));
             }
         }
-        Debug.Log(e.HitPoint); //a collision coordinates in world space
-        Debug.Log(e.HitGameObject.name); //a collided gameobject
-        Debug.Log(e.HitCollider.name); //a collided collider :)
+
+
+
     }
 
-
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Shield")
+        {
+            print("hit shield, bye.");
+            Destroy(this.gameObject);
+        }
+    }
     public void Override(ElementType.Type elType)
     {
         elementType = elType;
         rbody = this.GetComponent<Rigidbody>();
-        rbody.AddForce(transform.forward * 1400f);
+        rbody.AddForce(transform.forward * speed);
 
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        /*
-        if (collision.transform.tag == "Ignore") return;
-
-        Enemy enemy = collision.transform.GetComponent<Enemy>();
-
-        if (enemy)
+        
+        if (collision.transform.tag == "Player")
         {
-            float fDamage = damage * ElementType.getDamageModifier(elementType, enemy.elementType);
-            print("Projectile damage to enemy : " + Mathf.RoundToInt(fDamage));
-            enemy.TakeDamage(Mathf.RoundToInt(fDamage));
+            print("hit player!");
         }
 
-        //GameObject.Instantiate(explosionEffect, this.transform.position, this.transform.rotation);
 
-        Destroy(this.gameObject);
-        */
     }
 
 }

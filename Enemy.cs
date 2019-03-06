@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-public class Enemy : MonoBehaviour {
+public class Enemy : MonoBehaviour
+{
 
-    
+
     private int baseHealth, baseDamage, baseDefence;
     public int currentHealth, currentDamage, currentDefence = 100;
     public ElementType.Type elementType;
@@ -57,29 +58,45 @@ public class Enemy : MonoBehaviour {
     public GameObject shootPrefab;
     private Player player;
 
-	void Start () {
+    
+    void Start()
+    {
         navAgent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         outlineScript = GetComponent<Outline>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        StartCoroutine(Attack());
     }
-	
+
     void HandleAI()
     {
         if (reachedDistance)
         {
             anim.SetBool("Walking", false);
             anim.SetBool("Running", false);
-            StartCoroutine(Attack());
+            transform.LookAt(player.transform);
 
         }
     }
 
     IEnumerator Attack()
     {
-        yield return new WaitForSeconds(5f);
-        GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
-        newProj.GetComponent<RFX1_Target>().Target = player.transform.gameObject;
+        for (; ; )
+        {
+            yield return new WaitForSeconds(5f);
+
+            anim.SetTrigger("Longbow");
+
+            yield return new WaitForSeconds(0.5f);
+
+            if (reachedDistance)
+            {
+                GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
+                //newProj.GetComponent<RFX1_Target>().Target = player.transform.gameObject;
+
+                newProj.GetComponent<Projectile>().Override(ElementType.Type.Force);
+            }
+        }
     }
 
     public void LockOn()
@@ -91,7 +108,7 @@ public class Enemy : MonoBehaviour {
     {
         rootSeconds = s;
         rooted = true;
-  
+
 
         stunCircles.SetActive(true);
 
@@ -106,11 +123,11 @@ public class Enemy : MonoBehaviour {
         anim.speed = 0;
         freezeSeconds = s;
         frozen = true;
-   
+
 
 
     }
-    
+
     public void Airbound(float s)
     {
         if (!bound)
@@ -123,7 +140,7 @@ public class Enemy : MonoBehaviour {
             oldRot = transform.rotation.eulerAngles;
             Vector3 newPos = new Vector3(transform.position.x, transform.position.y + 3.5f, transform.position.z);
             transform.position = newPos;
-       
+
             Vector3 newRot = new Vector3(-94f, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
             transform.rotation = Quaternion.Euler(newRot);
             print("Attempted airbound");
@@ -169,7 +186,27 @@ public class Enemy : MonoBehaviour {
         Explode();
     }
 
-    void Update () {
+    protected bool pathComplete()
+    {
+        if (Vector3.Distance(navAgent.destination, navAgent.transform.position) <= navAgent.stoppingDistance)
+        {
+            if (!navAgent.hasPath || navAgent.velocity.sqrMagnitude == 0f)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void Update()
+    {
+
+        reachedDistance = pathComplete();
+
+        HandleAI();
+
+
         if (morph)
         {
             Morph();
@@ -189,6 +226,7 @@ public class Enemy : MonoBehaviour {
 
         if (!rooted && !frozen)
         {
+            
             if (!navAgent)
                 return;
             navAgent.speed = maxSpeed;
@@ -258,7 +296,7 @@ public class Enemy : MonoBehaviour {
                 }
             }
         }
-	}
+    }
 
 
     public void TakeDamage(int damage)
@@ -276,7 +314,7 @@ public class Enemy : MonoBehaviour {
             StartCoroutine(Die());
         }
 
-      
+
     }
 
     public void Explode()
@@ -308,16 +346,16 @@ public class Enemy : MonoBehaviour {
         {
             case 0:
                 elementType = ElementType.Type.Force;
-                    break;
+                break;
             case 1:
                 elementType = ElementType.Type.Lightning;
-                    break;
+                break;
             case 2:
                 elementType = ElementType.Type.Neutral;
-                    break;
+                break;
             case 3:
                 elementType = ElementType.Type.Water;
-                    break;
+                break;
             default:
                 elementType = ElementType.Type.Neutral;
                 break;
@@ -379,7 +417,7 @@ public class Enemy : MonoBehaviour {
 
 
         bool neutral = false;
-        
+
         switch (elementType)
         {
             case ElementType.Type.Force:
@@ -397,7 +435,7 @@ public class Enemy : MonoBehaviour {
         }
         if (!neutral)
         {
-          
+
         }
     }
 
@@ -405,9 +443,15 @@ public class Enemy : MonoBehaviour {
     {
         deathEffect.SetActive(true);
         //ExploderSingleton.ExploderInstance.ExplodeObject(gameObject);
-        GetComponentInChildren<MeshRenderer>().enabled = false;
+
         yield return new WaitForSeconds(2f);
+       
+    }
+
+    public void AnimDeath()
+    {
         deathEffect.SetActive(false);
         spawnManager.Deceased(this.gameObject);
+ 
     }
 }
