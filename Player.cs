@@ -175,17 +175,24 @@ public class Player : MonoBehaviour {
 
     public void Beam(bool t)
     {
-        if (t)
-        {
-            if (skillType == 1)
+        try{
+            if (t)
             {
-                weapon.Beam();
+                if (skillType == 1)
+                {
+                    weapon.Beam();
+                }
             }
-        }
-        else
+            else
+            {
+                weapon.EndBeam();
+            }
+        }catch(Exception e)
         {
+            print("an exception");
             weapon.EndBeam();
         }
+
 
     }
 

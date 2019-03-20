@@ -100,7 +100,8 @@ public class Weapon : MonoBehaviour {
             yield return new WaitForSeconds(0.25f);
             if (currentEnemy)
             {
-                currentEnemy.TakeDamage(5);
+                currentEnemy.TakeDamage(6);
+                currentEnemy = null;
             }
         }
     }
@@ -110,7 +111,7 @@ public class Weapon : MonoBehaviour {
     {
         if (beamActive)
         {
-            print("beam active!");
+
             RaycastHit hit;
             if (Physics.Raycast(transform.parent.position, transform.parent.TransformDirection(Vector3.forward), out hit))  //ray origin, ray direction
             {

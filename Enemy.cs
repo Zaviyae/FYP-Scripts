@@ -301,6 +301,8 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (currentHealth <= 0) return;
+        
         hpScript.ChangeHP(-damage, hpSpawnLoc.position, Vector3.up, 20f, damage.ToString());
         currentHealth -= damage;
         anim.SetTrigger("TakeDamage");
@@ -442,7 +444,7 @@ public class Enemy : MonoBehaviour
     IEnumerator Die()
     {
         deathEffect.SetActive(true);
-        //ExploderSingleton.ExploderInstance.ExplodeObject(gameObject);
+        
 
         yield return new WaitForSeconds(2f);
        
