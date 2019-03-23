@@ -49,10 +49,25 @@ public class PowerUpThrow : MonoBehaviour {
                 }
                 else
                 {
-                    elemental[Random.Range(0, elemental.Length)].SetActive(true);
+                    int chosenOne = Random.Range(0, elemental.Length);
+
+                    foreach(GameObject g in elemental)
+                    {
+                        if (elemental[chosenOne] == g)
+                        {
+                            g.SetActive(true);
+                        }
+                        else
+                        {
+                            Destroy(g);
+                        }
+                    }
+
+                    
                 }
 
                 sphere.SetActive(false);
+
                 transform.DetachChildren();
                 Destroy(this.gameObject);
                 

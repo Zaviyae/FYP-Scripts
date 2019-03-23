@@ -51,7 +51,7 @@ public class SpawnManager : MonoBehaviour {
        // int randomx = Random.Range(-42, 42);
         //int randomz = Random.Range(41, 125);
         //Vector3 spawnLoc = new Vector3(randomx, 0, randomz);
-        Vector3 spawnLoc = spawnRooms[0].GetComponent<EnemySpawn>().spawn.position;
+        Vector3 spawnLoc = spawnRooms[Random.Range(0, spawnRooms.Length)].GetComponent<EnemySpawn>().spawn.position;
         GameObject spawnedEnemy;
 
         if (inactivePool.Count >= 1)

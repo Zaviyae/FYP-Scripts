@@ -29,7 +29,7 @@ public class Elemental : MonoBehaviour {
 
         if(lifeTime == 0)
         {
-            lifeTime = Random.Range(10, 30);
+            lifeTime = Random.Range(25, 80);
         }
         StartCoroutine(Destroy());
 	}
@@ -108,13 +108,13 @@ public class Elemental : MonoBehaviour {
                 if (useCustomSkill)
                 {
                     Enemy currentTarget = target.GetComponent<Enemy>();
-                    currentTarget.spawnObject(skills[0]);
+                    currentTarget.spawnObject(skills[0], false);
 
                 }
                 else
                 {
-                    GameObject blast = GameObject.Instantiate(blastPrefab);
-                    blast.GetComponent<TargetBlast>().target = target;
+                   // GameObject blast = GameObject.Instantiate(blastPrefab);
+                   // blast.GetComponent<TargetBlast>().target = target;
                 }
 
                 
@@ -146,10 +146,10 @@ public class Elemental : MonoBehaviour {
 
             foreach (GameObject g in potentials)
             {
-                if (!g.GetComponent<Enemy>() || g.GetComponent<Enemy>().lockedOn)
-                    break;
-
-                filtered.Add(g);
+                if (g.GetComponent<Enemy>() && !g.GetComponent<Enemy>().lockedOn)
+                {
+                    filtered.Add(g);
+                }
              
             }
 

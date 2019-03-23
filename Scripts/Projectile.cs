@@ -58,7 +58,7 @@ public class Projectile : MonoBehaviour {
         if (!triggered)
         {
             triggered = true;
-            rbody.velocity = (rbody.velocity * 0.2f);
+            if(rbody) rbody.velocity = (rbody.velocity * 0.2f);
         }
     }
 
@@ -72,7 +72,7 @@ public class Projectile : MonoBehaviour {
             {
                 float fDamage = damage * ElementType.getDamageModifier(elementType, enemy.elementType);
                 print("Projectile damage to enemy : " + Mathf.RoundToInt(fDamage));
-                enemy.TakeDamage(Mathf.RoundToInt(fDamage));
+                enemy.TakeDamage(player.GetComponent<Player>().calcDamage(1), elementType);
             }
         }
 

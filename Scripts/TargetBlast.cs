@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TargetBlast : MonoBehaviour {
+
+    public bool playerControlled;
+
     public GameObject target;
 
     public int damage;
@@ -12,9 +15,11 @@ public class TargetBlast : MonoBehaviour {
     public bool instantDamage, collisionDamage;
     bool hit;
     Enemy enemy;
+    Player player;
+
     public enum blastType
     {
-        ROOT, FREEZE, DAMAGE
+        ROOT, FREEZE, DAMAGE, SUSPEND
     }
 
 
@@ -24,6 +29,8 @@ public class TargetBlast : MonoBehaviour {
 
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+
         var physicsMotion = GetComponentInChildren<RFX4_PhysicsMotion>(true);
         if (physicsMotion != null) physicsMotion.CollisionEnter += CollisionEnter;
 
@@ -65,7 +72,7 @@ public class TargetBlast : MonoBehaviour {
             enemy.Root(seconds);
             if (instantDamage)
             {
-                enemy.TakeDamage(damage);
+                enemy.TakeDamage(player.calcDamage(2), type);
             }
         }
 
@@ -80,12 +87,18 @@ public class TargetBlast : MonoBehaviour {
 
         }
 
+        if (myType == blastType.SUSPEND)
+        {
+            enemy.Airbound(5);
+
+        }
+
         if (myType == blastType.FREEZE)
         {
             enemy.Freeze(seconds);
             if (instantDamage)
             {
-                enemy.TakeDamage(damage);
+                enemy.TakeDamage(player.calcDamage(2), type);
             }
             else
             {
@@ -116,6 +129,7 @@ public class TargetBlast : MonoBehaviour {
 	}
 
 
+
     private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
     {
         if (!hit && collisionDamage)
@@ -127,10 +141,8 @@ public class TargetBlast : MonoBehaviour {
 
                 if (enemy)
                 {
-                    float fDamage = damage * ElementType.getDamageModifier(type, enemy.elementType);
-                    print("Target damage : " + Mathf.RoundToInt(fDamage));
                     StartCoroutine(Damage(timetilldamage));
-                    //enemy.TakeDamage(Mathf.RoundToInt(fDamage));
+
                 }
             }
             else
@@ -141,10 +153,7 @@ public class TargetBlast : MonoBehaviour {
 
                     if (enemy)
                     {
-                        float fDamage = damage * ElementType.getDamageModifier(type, enemy.elementType);
-                        print("Target damage (to root) " + Mathf.RoundToInt(fDamage));
                         StartCoroutine(Damage(timetilldamage));
-                        //enemy.TakeDamage(Mathf.RoundToInt(fDamage));
                     }
                 }
             }
@@ -156,10 +165,10 @@ public class TargetBlast : MonoBehaviour {
 
     public void Hit()
     {
-        float fDamage = damage * ElementType.getDamageModifier(type, target.GetComponent<Enemy>().elementType);
-        print("Target damage : " + Mathf.RoundToInt(fDamage));
+        
+        print("Target hit");
         StartCoroutine(Damage(timetilldamage));
-        //enemy.TakeDamage(Mathf.RoundToInt(fDamage));
+       
 
     }
 
@@ -169,7 +178,15 @@ public class TargetBlast : MonoBehaviour {
     {
         yield return new WaitForSeconds(time);
         enemy.anim.speed = 1f;
-        enemy.TakeDamage(damage);
+
+        if (playerControlled)
+        {
+            enemy.TakeDamage(player.calcDamage(2), type);
+        }
+        else
+        {
+            enemy.TakeDamage(damage, type);
+        }
         
     }
 }

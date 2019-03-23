@@ -10,14 +10,16 @@ public class Weapon : MonoBehaviour {
     public Text modeText;
     public GameObject enemyTarget;
     public GameObject shield;
-
+    public Player player;
     public bool beamActive;
 
-    public GameObject beamStart, beam, beamEnd;
-    public GameObject ibeamStart, ibeam, ibeamEnd;
+    private GameObject ibeamStart, ibeam, ibeamEnd;
     private LineRenderer line;
+    private ElementType.Type type;
 
     public Enemy currentEnemy;
+
+    public Text scoreText;
 
     [Header("Adjustable Variables")]
     public float beamEndOffset = 1f; //How far from the raycast hit point the end effect is positioned
@@ -25,13 +27,56 @@ public class Weapon : MonoBehaviour {
     public float textureLengthScale = 3; //Length of the beam texture
 
 
-    private void Start()
+
+    public GameObject beamStartb, beamb, beamEndb,
+            beamStartr, beamr, beamEndr,
+            beamStartp, beamp, beamEndp; //blue red and purple. The schools.
+
+    public List<GameObject> returnBeams(string colour)
     {
-        StartCoroutine(damageTick());
+        List<GameObject> returnedBeams = new List<GameObject>();
+        switch (colour)
+        {
+            case "Blue":
+                returnedBeams.Add(beamStartb);
+                returnedBeams.Add(beamb);
+                returnedBeams.Add(beamEndb);
+                type = ElementType.Type.Water;
+                break;
+            case "Red":
+                returnedBeams.Add(beamStartr);
+                returnedBeams.Add(beamr);
+                returnedBeams.Add(beamEndr);
+                type = ElementType.Type.Lightning;
+                break;
+
+            case "Purple":
+                returnedBeams.Add(beamStartp);
+                returnedBeams.Add(beamp);
+                returnedBeams.Add(beamEndp);
+                type = ElementType.Type.Force;
+                break;
+
+            default:
+                print("default");
+                break;
+
+        }
+        return returnedBeams;
+
     }
 
-    public void Beam()
+    private void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        StartCoroutine(damageTick());
+        
+      
+    }
+
+    public void Beam(string school)
+    {
+        //Red Purple or Blue
         print("start beam");
 
         if (ibeam)
@@ -42,10 +87,12 @@ public class Weapon : MonoBehaviour {
             Destroy(ibeamEnd);
 
         }
+  
+        GameObject[] converted = returnBeams(school).ToArray();
 
-        ibeamStart = Instantiate(beamStart, transform.parent.position, transform.parent.rotation);
-        ibeam = Instantiate(beam, transform.parent.position, transform.parent.rotation);
-        ibeamEnd = Instantiate(beamEnd, transform.parent.position, transform.parent.rotation);
+        ibeamStart = Instantiate(converted[0], transform.parent.position, transform.parent.rotation);
+        ibeam = Instantiate(converted[1], transform.parent.position, transform.parent.rotation);
+        ibeamEnd = Instantiate(converted[2], transform.parent.position, transform.parent.rotation);
 
 
         line = ibeam.GetComponent<LineRenderer>();
@@ -81,6 +128,11 @@ public class Weapon : MonoBehaviour {
             currentEnemy = null;
         }
 
+        if(hit.transform.tag == "Projectile")
+        {
+            Destroy(hit.transform.gameObject);
+        }
+
 
         ibeamEnd.transform.position = end;
         line.SetPosition(1, end);
@@ -98,9 +150,12 @@ public class Weapon : MonoBehaviour {
         for (; ; )
         {
             yield return new WaitForSeconds(0.25f);
+            if (player) { scoreText.text = ((player.currentScore - 5) * 10).ToString() + " %";  }
+
             if (currentEnemy)
             {
-                currentEnemy.TakeDamage(6);
+                
+                currentEnemy.TakeDamage(player.calcDamage(1), type);
                 currentEnemy = null;
             }
         }

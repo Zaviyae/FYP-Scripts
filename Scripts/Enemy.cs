@@ -33,7 +33,7 @@ public class Enemy : MonoBehaviour
     public Transform[] blastPoints;
 
     public GameObject[] blastObjects;
-
+    public GameObject[] elementalBlastObjects;
 
     public SpawnManager spawnManager;
     public bool rooted = false, frozen = false;
@@ -58,14 +58,38 @@ public class Enemy : MonoBehaviour
     public GameObject shootPrefab;
     private Player player;
 
-    
+
+    public GameObject shield, overpower;
+    public bool overpowered;
+
+    public string BrainState = "NEUTRAL";
+
     void Start()
     {
         navAgent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         outlineScript = GetComponent<Outline>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-        StartCoroutine(Attack());
+
+        StartCoroutine(BrainTick());
+    }
+
+    void Shield()
+    {
+
+    }
+
+    void RushPlayer()
+    {
+
+    }
+
+    void OverPower()
+    {
+        overpowered = true;
+        overpower.SetActive(true);
+        StartCoroutine(OverPowerCount(20f));
+
     }
 
     void HandleAI()
@@ -79,24 +103,116 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    IEnumerator Attack()
+    IEnumerator OverPowerCount(float s)
     {
-        for (; ; )
+        yield return new WaitForSeconds(s);
+        overpowered = false;
+        overpower.SetActive(false);
+    }
+
+    IEnumerator BrainTick()
+    {
+        for(; ; )
         {
-            yield return new WaitForSeconds(5f);
+            if (reachedDistance) { BrainState = "NEUTRAL"; } else { BrainState = "MOVING"; }
+            bool changedstate = false;
 
-            anim.SetTrigger("Longbow");
+            //thoughts and decisions
 
-            yield return new WaitForSeconds(0.5f);
+            int playerScore = player.currentScore;
+            bool playerShield = player.shieldActive;
 
-            if (reachedDistance)
+
+
+            if(BrainState == "NEUTRAL")
             {
-                GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
-                //newProj.GetComponent<RFX1_Target>().Target = player.transform.gameObject;
+                anim.SetBool("Aiming", true);
+                //SHIELD?
+                int chance = Random.Range(0, 10);
+                if (playerScore >= 8)
+                {
+                    if (chance == playerScore)
+                    {                       
+                        BrainState = "SHIELDING";
+                        Shield();
+                        changedstate = true;
+                    }
+                }
 
-                newProj.GetComponent<Projectile>().Override(ElementType.Type.Force);
+                //RUN AT PLAYER?
+                chance = Random.Range(0, 20);
+                if (playerShield)                 
+                    chance = Random.Range(0, 5);                
+
+                if (chance == 2 )
+                {
+                    BrainState = "RUSHING";
+                    RushPlayer();
+                    changedstate = true;
+                }
+
+                //OVERPOWER?
+                chance = Random.Range(0,50);
+                if (chance == 2)
+                {
+                    changedstate = true;
+                    OverPower();
+                }
+
+                //DEMON
+                chance = Random.Range(0, 20);
+                if(chance == 10)
+                {
+                    changedstate = true;
+                    Morph();
+
+                }
+
+
+
+
+                if (!changedstate)
+                {
+                    chance = Random.Range(0, 2);
+                    if (chance == 1)
+                    {
+                        //attack
+                        anim.SetTrigger("Longbow");
+                        anim.SetBool("Aiming", false);
+                    }
+                }
+                else
+                {
+                    anim.SetBool("Aiming", false);
+                }
             }
+            else
+            {
+                anim.SetBool("Aiming", false);
+            }
+
+
+
+
+            //score
+
+
+            if(overpowered)
+            {
+                yield return new WaitForSeconds(Random.Range(1, 3));
+            }
+
+            yield return new WaitForSeconds(Random.Range(3,10));
         }
+    }
+
+
+    public void SpawnArrow()
+    {
+        GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
+        //newProj.GetComponent<RFX1_Target>().Target = player.transform.gameObject;
+
+        newProj.GetComponent<Projectile>().Override(ElementType.Type.Force);
     }
 
     public void LockOn()
@@ -161,20 +277,34 @@ public class Enemy : MonoBehaviour
         print("Bound over");
         waterBall.SetActive(false);
     }
-    public void spawnObject(int id)
+
+    public void spawnObject(int id, bool player)
     {
+        
         blastObjects[id].SetActive(false);
         blastObjects[id].SetActive(true);
         blastObjects[id].GetComponent<TargetBlast>().target = this.gameObject;
         blastObjects[id].GetComponent<TargetBlast>().SetUp();
+        blastObjects[id].GetComponent<TargetBlast>().playerControlled = player;
     }
 
-    public void spawnObject(Skill skill)
+    public void spawnObject(Skill skill, bool player)
     {
-        blastObjects[skill.skillID].SetActive(false);
-        blastObjects[skill.skillID].SetActive(true);
-        blastObjects[skill.skillID].GetComponent<TargetBlast>().target = this.gameObject;
-        blastObjects[skill.skillID].GetComponent<TargetBlast>().SetUp();
+        if (skill.useSkillID)
+        {
+            elementalBlastObjects[skill.skillID].SetActive(false);
+            elementalBlastObjects[skill.skillID].SetActive(true);
+            elementalBlastObjects[skill.skillID].GetComponent<TargetBlast>().target = this.gameObject;
+            elementalBlastObjects[skill.skillID].GetComponent<TargetBlast>().SetUp();
+            elementalBlastObjects[skill.skillID].GetComponent<TargetBlast>().playerControlled = player;
+        }
+        else
+        {
+            if(skill.skillName == "Waterbound")
+            {
+                Airbound(5);
+            }
+        }
     }
 
     public void Morph()
@@ -224,7 +354,7 @@ public class Enemy : MonoBehaviour
             outlineScript.enabled = false;
         }
 
-        if (!rooted && !frozen)
+        if (!rooted && !frozen && !bound)
         {
             
             if (!navAgent)
@@ -299,13 +429,17 @@ public class Enemy : MonoBehaviour
     }
 
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, ElementType.Type el)
     {
+        float dF = damage;
+        damage = Mathf.RoundToInt(dF *= ElementType.getDamageModifier(el, elementType));
+
         if (currentHealth <= 0) return;
         
         hpScript.ChangeHP(-damage, hpSpawnLoc.position, Vector3.up, 20f, damage.ToString());
         currentHealth -= damage;
         anim.SetTrigger("TakeDamage");
+
         if (currentHealth <= 0)
         {
             lockPos = transform;

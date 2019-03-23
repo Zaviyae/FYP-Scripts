@@ -194,6 +194,7 @@ public class RiftInput : MonoBehaviour {
                 switching = true;
                 if (SteamVR_Input._default.inActions.RightGrip.GetLastStateDown(SteamVR_Input_Sources.RightHand))
                 {
+                    print("tried to increment");
                     player.IncrementSkillMode();
 
                 }

@@ -9,6 +9,7 @@ public class Player : MonoBehaviour {
 
     private Valve.VR.InteractionSystem.Player vrPlayer;
 
+    public int currentScore = 0;
     public GameObject shield;
 
     public GameObject target;
@@ -32,7 +33,7 @@ public class Player : MonoBehaviour {
     GameObject sEffect = null;
     public Material baseMat;
     public bool casting = false;
-    public int skillMode = 0; 
+    public int school = 0; 
 
     public bool canShootBullets = true;
     public GameObject neutralBullet;
@@ -88,6 +89,30 @@ public class Player : MonoBehaviour {
         
 	}
 	
+    public int calcDamage(int num)
+    {
+        float baseModifier = 1f;
+
+        switch (num)
+        {
+            case 1:       
+                return Mathf.RoundToInt(GlobalVariables.BASE_ONE_DAMAGE + (currentScore - 5));
+                
+            case 2:
+
+                return Mathf.RoundToInt(GlobalVariables.BASE_TWO_DAMAGE * (baseModifier + ((currentScore - 5) / 10f)));
+                
+            case 3:
+
+                return Mathf.RoundToInt(GlobalVariables.BASE_THREE_DAMAGE * (baseModifier + ((currentScore - 5) / 10f)));
+                
+            default:
+
+                return 0;
+        }
+
+    }
+
 	public void Teleport()
     {
         if (playerView.getPortal())
@@ -175,24 +200,35 @@ public class Player : MonoBehaviour {
 
     public void Beam(bool t)
     {
-        try{
             if (t)
             {
                 if (skillType == 1)
                 {
-                    weapon.Beam();
+                    String schoolname = "";
+
+                    switch (school)
+                    {
+                        case 0:
+                            schoolname = "Red";
+                            break;
+
+                        case 1:
+                            schoolname = "Purple";
+                            break;
+
+                        case 2:
+                            schoolname = "Blue";
+                            break;
+
+                    }
+                    weapon.Beam(schoolname);
                 }
             }
             else
             {
+            if(weapon)
                 weapon.EndBeam();
             }
-        }catch(Exception e)
-        {
-            print("an exception");
-            weapon.EndBeam();
-        }
-
 
     }
 
@@ -203,9 +239,9 @@ public class Player : MonoBehaviour {
         {
 
             if (rInput.drawing) return;
-            GameObject proj = null;
+            //GameObject proj = null;
             GameObject[] skillSet = null;
-            switch (skillMode)
+            switch (school)
             {
                 case 0:
                     skillSet = LightningSkillSet;
@@ -225,7 +261,24 @@ public class Player : MonoBehaviour {
 
                     // proj = GameObject.Instantiate(skillSet[skillType -1], weapon.particleComplete.transform.position, weapon.particleComplete.transform.rotation);
                     // StartCoroutine(FireTime(0.3f));
-                    weapon.Beam();
+                    String schoolname = "";
+
+                    switch (school)
+                    {
+                        case 0:
+                            schoolname = "Red";
+                            break;
+
+                        case 1:
+                            schoolname = "Purple";
+                            break;
+
+                        case 2:
+                            schoolname = "Blue";
+                            break;
+
+                    }
+                    weapon.Beam(schoolname);
 
                     break;
                 case 2:
@@ -233,13 +286,14 @@ public class Player : MonoBehaviour {
                     {
                         if (skillSet[skillType - 1].GetComponent<TargetBlast>().useCustomObject)
                         {
-                            target.GetComponent<Enemy>().spawnObject(skillSet[skillType - 1].GetComponent<TargetBlast>().customObjectID);
+                            target.GetComponent<Enemy>().spawnObject(skillSet[skillType - 1].GetComponent<TargetBlast>().customObjectID, true);
                             
                         }
                         else
                         {
                             GameObject blast = GameObject.Instantiate(skillSet[skillType - 1], target.transform.position, target.transform.rotation);
                             blast.GetComponent<TargetBlast>().target = target;
+                            blast.GetComponent<TargetBlast>().playerControlled = true;
                         }
                         ableToFire = false;
                         StartCoroutine(FireTime(1f));
@@ -382,6 +436,7 @@ public class Player : MonoBehaviour {
         {
             weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
             weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
+
         }catch(Exception e)
         {
             print("failed for some reason");
@@ -406,34 +461,44 @@ public class Player : MonoBehaviour {
         if (!weapon) weapon = rInput.weapon;
         print(result.Match.Name.Substring(0,1));
 
-        print("Actual score = " + result.Score);
+       // print("Actual score = " + result.Score);
         float distfromOne = 1 - result.Score;
 
-        print("Score : " + Mathf.Round(distfromOne * 10));
+       // print("Score : " + Mathf.Round(distfromOne * 10));
+
+        currentScore = (int)Mathf.Round(distfromOne * 10);
+
+        print("current score : " + currentScore);
+
         print("Closest result : " + result.Match.Name);
-        if (distfromOne * 10 >= 6)
+
+        if (currentScore >= 5)
         {
             switch (result.Match.Name.Substring(0, 2))
             {
                 case "ON":
-                    //sEffect = GameObject.Instantiate(skillEffectsM[skillMode], weapon.particleComplete.transform);
+
                     skillType = 1;
-                    print("Skill 1 (Basic Projectile)");
+                    print("Skill 1 (Beam)");
                     casting = true;
                     break;
+
                 case "TW":
-                    //sEffect = GameObject.Instantiate(skillEffectsL[skillMode], weapon.particleComplete.transform);
+
                     skillType = 2;
                     print("SKill 2");
                     casting = true;
                     break;
+
                 case "TH":
-                    //sEffect = GameObject.Instantiate(skillEffectsV[skillMode], weapon.particleComplete.transform);
+
                     skillType = 3;
                     print("Skill 3");
                     casting = true;
                     break;
+
                 default:
+
                     t = false;
                     print("Unrecognised");
                     break;
@@ -449,9 +514,9 @@ public class Player : MonoBehaviour {
             }
 
             
-            wandMeshEffects[skillMode].transform.gameObject.SetActive(true);
+            wandMeshEffects[school].transform.gameObject.SetActive(true);
 
-            wandMeshEffects[skillMode].GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect();
+            wandMeshEffects[school].GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect();
         }
         else
         {
@@ -475,7 +540,7 @@ public class Player : MonoBehaviour {
 
         if (!t) return;
         Vector3 resetPos = new Vector3(0,0,0);
-       // sEffect.transform.localPosition = resetPos;
+
 
 
 
@@ -483,11 +548,12 @@ public class Player : MonoBehaviour {
 
     public void IncrementSkillMode()
     {
+        currentScore = 0;
         casting = false;
         try
         {
-            weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
-            weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
+           // weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
+           // weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
         }
         catch (Exception e)
         {
@@ -495,13 +561,13 @@ public class Player : MonoBehaviour {
         }
         clearRenders();
 
-        if (skillMode < 2)
+        if (school < 2)
         {
-            skillMode++;
+            school++;
         }
         else
         {
-            skillMode = 0;
+            school = 0;
         }
 
         AssignElement();
@@ -509,18 +575,18 @@ public class Player : MonoBehaviour {
 
     void AssignElement()
     {
-        switch (skillMode)
+        switch (school)
         {
             case 0:
-                print("Lightning");
+                print("Lightning");  //Red
                 elementType = ElementType.Type.Lightning;
                 break;
             case 1:
-                print("Force");
+                print("Force");  //Purple
                 elementType = ElementType.Type.Force;
                 break;
             case 2:
-                print("Water");
+                print("Water");  //Blue
                 elementType = ElementType.Type.Water;
                 break;
         }

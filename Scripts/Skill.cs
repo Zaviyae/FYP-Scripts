@@ -7,10 +7,11 @@ public class Skill : ScriptableObject{
 
     public string skillName;
     public int skillID;
+    public bool useSkillID = true;
 
     public enum blastType
     {
-        ROOT, FREEZE, DAMAGE
+        ROOT, FREEZE, DAMAGE, SUSPEND
     }
 
     public blastType myType;
