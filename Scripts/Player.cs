@@ -75,7 +75,7 @@ public class Player : MonoBehaviour {
         maxHealth = 100;
         currentHealth = maxHealth;
 
-        wandMeshEffects = new PSMeshRendererUpdater[3];
+       // wandMeshEffects = new PSMeshRendererUpdater[3];
         vrPlayer = this.GetComponent<Valve.VR.InteractionSystem.Player>();
         playerView = this.GetComponentInChildren<PlayerView>();
        
@@ -85,7 +85,7 @@ public class Player : MonoBehaviour {
 
         startPortal.gameObject.SetActive(false);
         fade = GetComponentInChildren<Valve.VR.SteamVR_Fade>();
-        AssignElement();
+        
         
 	}
 	
@@ -278,6 +278,7 @@ public class Player : MonoBehaviour {
                             break;
 
                     }
+                    
                     weapon.Beam(schoolname);
 
                     break;
@@ -350,6 +351,7 @@ public class Player : MonoBehaviour {
         clear = true;
     }
 
+    
     void clearRenders()
     {
         try
@@ -378,7 +380,7 @@ public class Player : MonoBehaviour {
 
         }
     }
-
+    
     public void ShieldUp(bool t)
     {
         if (t)
@@ -441,12 +443,12 @@ public class Player : MonoBehaviour {
         {
             print("failed for some reason");
         }
-        clearRenders();
+       // clearRenders();
 
         clear = false;
         if (sEffect) Destroy(sEffect);
         if (!weapon) weapon = rInput.weapon;
-
+        weapon.beaming = false;
         sEffect = GameObject.Instantiate(failEffect, weapon.particleComplete.transform);
         print("Too small");
         casting = false;
@@ -455,10 +457,12 @@ public class Player : MonoBehaviour {
     }
     public void CastSpell(DollarRecognizer.Result result)
     {
+
         bool t = true;
         clear = false;
-        clearRenders();
+       // clearRenders();
         if (!weapon) weapon = rInput.weapon;
+        weapon.beaming = false;
         print(result.Match.Name.Substring(0,1));
 
        // print("Actual score = " + result.Score);
@@ -480,6 +484,8 @@ public class Player : MonoBehaviour {
 
                     skillType = 1;
                     print("Skill 1 (Beam)");
+                    weapon.beamSeconds = 20f * (1f + ((currentScore - 5) / 10f));
+                    weapon.beaming = true;
                     casting = true;
                     break;
 
@@ -541,24 +547,21 @@ public class Player : MonoBehaviour {
         if (!t) return;
         Vector3 resetPos = new Vector3(0,0,0);
 
+    }
 
-
-
+    public void BeamTimed()
+    {
+        CastSpell();
+        weapon.beaming = false;
+        // casting = false;
     }
 
     public void IncrementSkillMode()
     {
         currentScore = 0;
         casting = false;
-        try
-        {
-           // weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
-           // weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
-        }
-        catch (Exception e)
-        {
-            print("failed for some reason");
-        }
+
+       
         clearRenders();
 
         if (school < 2)
@@ -573,19 +576,22 @@ public class Player : MonoBehaviour {
         AssignElement();
     }
 
-    void AssignElement()
+    public void AssignElement()
     {
         switch (school)
         {
             case 0:
+                weapon.ChangeMesh("Red");
                 print("Lightning");  //Red
                 elementType = ElementType.Type.Lightning;
                 break;
             case 1:
+                weapon.ChangeMesh("Purple");
                 print("Force");  //Purple
                 elementType = ElementType.Type.Force;
                 break;
             case 2:
+                weapon.ChangeMesh("Blue");
                 print("Water");  //Blue
                 elementType = ElementType.Type.Water;
                 break;

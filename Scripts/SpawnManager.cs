@@ -13,13 +13,19 @@ public class SpawnManager : MonoBehaviour {
     public float spawnTime;
     public Transform spawnCornerx, spawnCornery;
     public Player player;
-
+    public List<EnemyProfiles> availableEnemyTypes;
     public GameObject[] spawnRooms;
 
 	void Start () {
-        RenderSettings.fogDensity = 0.06f;
+       // RenderSettings.fogDensity = 0.06f;
         activePool = new List<GameObject>();
         inactivePool = new Stack<GameObject>();
+
+        availableEnemyTypes = new List<EnemyProfiles>();
+        availableEnemyTypes.Add(new EnemyProfiles.Archer(1));
+        availableEnemyTypes.Add(new EnemyProfiles.Archer(2));
+        availableEnemyTypes.Add(new EnemyProfiles.Archer(3));
+        availableEnemyTypes.Add(new EnemyProfiles.Archer(4));
 
         StartWave(0);
 	}
@@ -47,6 +53,7 @@ public class SpawnManager : MonoBehaviour {
 
     void SpawnEnemy()
     {
+        EnemyProfiles[] enemyTypeArray = availableEnemyTypes.ToArray();
         
        // int randomx = Random.Range(-42, 42);
         //int randomz = Random.Range(41, 125);
@@ -67,7 +74,7 @@ public class SpawnManager : MonoBehaviour {
             activePool.Add(spawnedEnemy);
         }
 
-        spawnedEnemy.GetComponent<Enemy>().SetUp(100, Random.Range(0.5f, 5f));
+        spawnedEnemy.GetComponent<Enemy>().SetUp(enemyTypeArray[Random.Range(0, enemyTypeArray.Length)]);
         spawnedEnemy.GetComponent<Enemy>().spawnManager = this;
         spawnedEnemy.SetActive(true);
 

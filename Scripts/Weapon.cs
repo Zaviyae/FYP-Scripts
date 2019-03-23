@@ -19,7 +19,17 @@ public class Weapon : MonoBehaviour {
 
     public Enemy currentEnemy;
 
+    public float beamSeconds = 0f;
+
     public Text scoreText;
+
+    public bool beaming;
+
+    public Text beamCount;
+
+    public MeshRenderer wandMesh;
+    public Material red, purple, blue;
+
 
     [Header("Adjustable Variables")]
     public float beamEndOffset = 1f; //How far from the raycast hit point the end effect is positioned
@@ -66,16 +76,34 @@ public class Weapon : MonoBehaviour {
 
     }
 
+    
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         StartCoroutine(damageTick());
-        
-      
+        beamCount.text = beamSeconds.ToString("F0");
+        player.AssignElement();
+
     }
 
+    public void ChangeMesh(string s)
+    {
+        switch (s)
+        {
+            case "Red":
+                wandMesh.material = red;
+                break;
+            case "Blue":
+                wandMesh.material = blue;
+                break;
+            case "Purple":
+                wandMesh.material = purple;
+                break;
+        }
+    }
     public void Beam(string school)
     {
+        
         //Red Purple or Blue
         print("start beam");
 
@@ -164,8 +192,26 @@ public class Weapon : MonoBehaviour {
 
     private void Update()
     {
+        if (beaming)
+        {
+            beamCount.enabled = true;
+
+        }
+        else
+        {
+            beamCount.enabled = false;
+        }
+
         if (beamActive)
         {
+            beamSeconds -= 1 * Time.deltaTime;
+            beamCount.text = beamSeconds.ToString("F0");
+            if(beamSeconds <= 0)
+            {
+                player.BeamTimed();
+                beamActive = false;
+            }
+
 
             RaycastHit hit;
             if (Physics.Raycast(transform.parent.position, transform.parent.TransformDirection(Vector3.forward), out hit))  //ray origin, ray direction

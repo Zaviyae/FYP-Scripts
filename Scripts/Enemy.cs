@@ -6,9 +6,11 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
 
+    
 
-    private int baseHealth, baseDamage, baseDefence;
-    public int currentHealth, currentDamage, currentDefence = 100;
+    private int baseHealth, baseDamage;
+    public int currentHealth, currentDamage;
+
     public ElementType.Type elementType;
     public HPScript hpScript;
 
@@ -60,28 +62,50 @@ public class Enemy : MonoBehaviour
 
 
     public GameObject shield, overpower;
-    public bool overpowered;
+    public bool overpowered, shielded, spawned;
 
     public string BrainState = "NEUTRAL";
 
+    public GameObject[] ArcherWeapons;
+    public GameObject[] ArcherHeads;
+    public GameObject[] ArcherBacks;
+
+    private NavMeshObstacle obstacle;
+
+    public EnemyProfiles myProfile;
+
     void Start()
     {
+
+        obstacle = GetComponent<NavMeshObstacle>();
         navAgent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         outlineScript = GetComponent<Outline>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-
+        
         StartCoroutine(BrainTick());
+
+       
     }
 
     void Shield()
     {
-
+        if (!shielded)
+        {
+            shielded = true;
+            shield.SetActive(true);
+            anim.SetBool("Spinning", true);
+            StartCoroutine(ShieldCountDown(10f));
+        }
     }
 
     void RushPlayer()
     {
+        navAgent.enabled = true;
+        navAgent.stoppingDistance = 0f;
 
+        navAgent.speed = 7f;
+        anim.SetBool("Rolling", true);
     }
 
     void OverPower()
@@ -103,11 +127,23 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    IEnumerator ShieldCountDown(float s)
+    {
+        yield return new WaitForSeconds(s);
+        shielded = false;
+        shield.SetActive(false);
+        BrainState = "NEUTRAL";
+        anim.SetBool("Spinning", false);
+
+    }
+
     IEnumerator OverPowerCount(float s)
     {
         yield return new WaitForSeconds(s);
         overpowered = false;
         overpower.SetActive(false);
+        BrainState = "NEUTRAL";
+
     }
 
     IEnumerator BrainTick()
@@ -140,11 +176,11 @@ public class Enemy : MonoBehaviour
                 }
 
                 //RUN AT PLAYER?
-                chance = Random.Range(0, 20);
+                chance = Random.Range(0, 100);
                 if (playerShield)                 
                     chance = Random.Range(0, 5);                
 
-                if (chance == 2 )
+                if (chance == 3 )
                 {
                     BrainState = "RUSHING";
                     RushPlayer();
@@ -199,10 +235,10 @@ public class Enemy : MonoBehaviour
 
             if(overpowered)
             {
-                yield return new WaitForSeconds(Random.Range(1, 3));
+                yield return new WaitForSeconds(1);
             }
 
-            yield return new WaitForSeconds(Random.Range(3,10));
+            yield return new WaitForSeconds(Random.Range(3,7));
         }
     }
 
@@ -329,22 +365,39 @@ public class Enemy : MonoBehaviour
         return false;
     }
 
+    bool playerCheck()
+    {
+        if (Vector3.Distance(player.transform.position, transform.position) <= myProfile.baseDistance)
+        {
+            return true;
+        }
+        return false;
+    }
+
     void Update()
     {
+        if (navAgent.enabled)
+        {
+            reachedDistance = pathComplete();
+        }
 
-        reachedDistance = pathComplete();
+        if (reachedDistance)
+        {
+            navAgent.enabled = false;
+            obstacle.enabled = true;
+
+        }
+
+        if (!playerCheck())
+        {
+            navAgent.enabled = true;
+            obstacle.enabled = false;
+        }
+        
 
         HandleAI();
 
 
-        if (morph)
-        {
-            Morph();
-        }
-        if (testBound)
-        {
-            Airbound(5);
-        }
         if (targetted)
         {
             outlineScript.enabled = true;
@@ -354,10 +407,12 @@ public class Enemy : MonoBehaviour
             outlineScript.enabled = false;
         }
 
-        if (!rooted && !frozen && !bound)
+        if (!rooted && !frozen && !bound && spawned)
         {
             
             if (!navAgent)
+                return;
+            if (!navAgent.enabled)
                 return;
             navAgent.speed = maxSpeed;
             navAgent.isStopped = false;
@@ -458,8 +513,26 @@ public class Enemy : MonoBehaviour
         spawnManager.Deceased(this.gameObject);
     }
 
-    public void SetUp(int health, float speed)
+    public void SetUp(EnemyProfiles profile)
     {
+        myProfile = profile;
+        int level = profile.Level;
+        switch (profile.myClass)
+        {
+            case EnemyProfiles.Class.Archer:
+               
+                ArcherWeapons[level - 1].SetActive(true);
+                ArcherHeads[level - 1].SetActive(true);
+                ArcherWeapons[level - 1].SetActive(true);
+                break;
+            case EnemyProfiles.Class.Swordie:
+                break;
+            case EnemyProfiles.Class.Mage:
+                break;
+        }
+       
+        transform.localScale = new Vector3(profile.baseSize, profile.baseSize, profile.baseSize);
+
         GetComponentInChildren<MeshRenderer>().enabled = true;
         lockedOn = false;
         foreach (GameObject o in blastObjects)
@@ -472,12 +545,16 @@ public class Enemy : MonoBehaviour
         navAgent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         this.gameObject.SetActive(true);
-        baseHealth = health;
+
+
+        baseHealth = profile.maxHealth;
         currentHealth = baseHealth;
         hpScript.HP = currentHealth;
-        navAgent.speed = speed;
-        maxSpeed = speed;
+
+
+
         int elementInt = Random.Range(0, 4);
+
         switch (elementInt)
         {
             case 0:
@@ -496,10 +573,21 @@ public class Enemy : MonoBehaviour
                 elementType = ElementType.Type.Neutral;
                 break;
         }
+
+
         setMesh();
+
+
+        maxSpeed = profile.baseSpeed;
+        navAgent.speed = maxSpeed;
+        navAgent.stoppingDistance = Random.Range(profile.baseDistance - 5 , profile.baseDistance + 10);
+        
+
+        anim.SetTrigger("Spawn");
+        navAgent.isStopped = true; 
     }
 
-
+    /*
     public void SetUp(int health, float speed, ElementType.Type element)
     {
         GetComponentInChildren<MeshRenderer>().enabled = true;
@@ -522,6 +610,13 @@ public class Enemy : MonoBehaviour
         navAgent.speed = speed;
         maxSpeed = speed;
         setMesh();
+    }
+    */
+
+    public void SpawnAnimFinished()
+    {
+        spawned = true;
+        navAgent.isStopped = false;
     }
 
     void setMesh()
