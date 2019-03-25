@@ -11,13 +11,22 @@ public class SpawnManager : MonoBehaviour {
     public List<GameObject> activePool;
     public int enemiesRemaining;
     public float spawnTime;
-    public Transform spawnCornerx, spawnCornery;
+
     public Player player;
     public List<EnemyProfiles> availableEnemyTypes;
     public GameObject[] spawnRooms;
 
-	void Start () {
-       // RenderSettings.fogDensity = 0.06f;
+    public GameObject fireballPrefab;
+    public ObjectPool fireballPool;
+
+
+    List<GameObject> availableSpawns;
+    List<GameObject> unavailableSpawns;
+
+    void Start () {
+
+        fireballPool = new ObjectPool(fireballPrefab, 100);
+
         activePool = new List<GameObject>();
         inactivePool = new Stack<GameObject>();
 
@@ -27,7 +36,14 @@ public class SpawnManager : MonoBehaviour {
         availableEnemyTypes.Add(new EnemyProfiles.Archer(3));
         availableEnemyTypes.Add(new EnemyProfiles.Archer(4));
 
+        availableEnemyTypes.Add(new EnemyProfiles.Mage(1));
+        availableEnemyTypes.Add(new EnemyProfiles.Mage(2));
+        availableEnemyTypes.Add(new EnemyProfiles.Mage(3));
+        availableEnemyTypes.Add(new EnemyProfiles.Mage(4));
+
         StartWave(0);
+
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 	}
 	
 	
@@ -38,6 +54,17 @@ public class SpawnManager : MonoBehaviour {
 
     public void StartWave(int waveNumber)
     {
+        availableSpawns = new List<GameObject>();
+        unavailableSpawns = new List<GameObject>();
+
+        foreach (GameObject g in spawnRooms)
+        {
+            g.GetComponent<EnemySpawn>().currentEnemy = null;
+            g.GetComponent<EnemySpawn>().spawnManager = this;
+            availableSpawns.Add(g);
+           
+        }
+
         player.currentHealth = player.maxHealth;
         enemiesRemaining = waveAmount[waveNumber];
 
@@ -53,40 +80,54 @@ public class SpawnManager : MonoBehaviour {
 
     void SpawnEnemy()
     {
+
         EnemyProfiles[] enemyTypeArray = availableEnemyTypes.ToArray();
-        
-       // int randomx = Random.Range(-42, 42);
-        //int randomz = Random.Range(41, 125);
-        //Vector3 spawnLoc = new Vector3(randomx, 0, randomz);
-        Vector3 spawnLoc = spawnRooms[Random.Range(0, spawnRooms.Length)].GetComponent<EnemySpawn>().spawn.position;
-        GameObject spawnedEnemy;
 
-        if (inactivePool.Count >= 1)
+        if (availableSpawns.Count > 0)
         {
-            spawnedEnemy = inactivePool.Pop();  
-            activePool.Add(spawnedEnemy);
-            spawnedEnemy.transform.position = spawnLoc;
-        }
-        else
-        {
-            print(inactivePool.Count);
-            spawnedEnemy = GameObject.Instantiate(enemyPrefab, spawnLoc, Quaternion.identity);
-            activePool.Add(spawnedEnemy);
+            // Vector3 spawnLoc = spawnRooms[Random.Range(0, spawnRooms.Length)].GetComponent<EnemySpawn>().spawn.position;
+            EnemySpawn chosenSpawn = availableSpawns[Random.Range(0, availableSpawns.Count)].GetComponent<EnemySpawn>();
+           
+            GameObject spawnedEnemy;
+
+            
+            if (inactivePool.Count >= 1)
+            {
+                spawnedEnemy = inactivePool.Pop();
+                activePool.Add(spawnedEnemy);
+                spawnedEnemy.transform.position = chosenSpawn.spawn.position; 
+            }
+            else
+            {
+                print(inactivePool.Count);
+                spawnedEnemy = GameObject.Instantiate(enemyPrefab, chosenSpawn.spawn.position, Quaternion.identity);
+                activePool.Add(spawnedEnemy);
+            }
+
+
+            spawnedEnemy.GetComponent<Enemy>().SetUp(enemyTypeArray[Random.Range(0, enemyTypeArray.Length)]);
+            spawnedEnemy.GetComponent<Enemy>().spawnManager = this;
+            spawnedEnemy.SetActive(true);
+
+            if (enemiesRemaining != 1)
+            {
+                StartCoroutine(SpawnTime(Random.Range(2, 8)));
+            }
+            enemiesRemaining--;
+
+            chosenSpawn.currentEnemy = spawnedEnemy;
+            availableSpawns.Remove(chosenSpawn.gameObject);
+            unavailableSpawns.Add(chosenSpawn.gameObject);
+
         }
 
-        spawnedEnemy.GetComponent<Enemy>().SetUp(enemyTypeArray[Random.Range(0, enemyTypeArray.Length)]);
-        spawnedEnemy.GetComponent<Enemy>().spawnManager = this;
-        spawnedEnemy.SetActive(true);
 
-        if(enemiesRemaining != 1)
-        {
-            StartCoroutine(SpawnTime(Random.Range(2,8)));
-        }
-        enemiesRemaining--;
-
-       
     }
 
+    public void removeMe(EnemySpawn e)
+    {
+        unavailableSpawns.Remove(e.gameObject);
+    }
     void CheckWave()
     {
         if(enemiesRemaining == 0 && activePool.Count == 0)
@@ -103,5 +144,10 @@ public class SpawnManager : MonoBehaviour {
         activePool.Remove(enemy);
         enemy.SetActive(false);
         CheckWave();
+    }
+
+    public List<GameObject> inform()
+    {
+        return activePool;
     }
 }

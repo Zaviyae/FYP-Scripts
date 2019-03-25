@@ -259,8 +259,6 @@ public class Player : MonoBehaviour {
             {
                 case 1:
 
-                    // proj = GameObject.Instantiate(skillSet[skillType -1], weapon.particleComplete.transform.position, weapon.particleComplete.transform.rotation);
-                    // StartCoroutine(FireTime(0.3f));
                     String schoolname = "";
 
                     switch (school)
@@ -288,13 +286,14 @@ public class Player : MonoBehaviour {
                         if (skillSet[skillType - 1].GetComponent<TargetBlast>().useCustomObject)
                         {
                             target.GetComponent<Enemy>().spawnObject(skillSet[skillType - 1].GetComponent<TargetBlast>().customObjectID, true);
-                            
+                            HitNearby(skillSet[skillType - 1], target, 5);
                         }
                         else
                         {
                             GameObject blast = GameObject.Instantiate(skillSet[skillType - 1], target.transform.position, target.transform.rotation);
                             blast.GetComponent<TargetBlast>().target = target;
                             blast.GetComponent<TargetBlast>().playerControlled = true;
+                            print("NON CUSTOM OBJECT");
                         }
                         ableToFire = false;
                         StartCoroutine(FireTime(1f));
@@ -303,13 +302,41 @@ public class Player : MonoBehaviour {
                 default:
                     break;
             }
-           // proj.GetComponent<Projectile>().damage += damageModifier;
-            //proj.GetComponent<Projectile>().elementType = elementType;
             
             
             
         }
     }
+
+    public void HitNearby(GameObject blast, GameObject target, int jumps)
+    {
+
+            StartCoroutine(Hit(blast, target, jumps));
+    
+    }
+
+    IEnumerator Hit(GameObject blast, GameObject target, int jumps)
+    {
+
+        jumps -= 1;
+
+        yield return new WaitForSeconds(1.2f);
+
+        GameObject newTarget = target.GetComponent<Enemy>().NearestEnemy();
+
+        if (newTarget)
+        {
+            newTarget.GetComponent<Enemy>().spawnObject(blast.GetComponent<TargetBlast>().customObjectID, true);
+
+        }
+        if (jumps != 0)
+        {
+            HitNearby(blast, newTarget, jumps);
+        }
+
+
+    }
+    
 
     public void TakeDamage(float damage)
     {
@@ -578,23 +605,27 @@ public class Player : MonoBehaviour {
 
     public void AssignElement()
     {
-        switch (school)
+        weapon = rInput.weapon;
+        if (weapon)
         {
-            case 0:
-                weapon.ChangeMesh("Red");
-                print("Lightning");  //Red
-                elementType = ElementType.Type.Lightning;
-                break;
-            case 1:
-                weapon.ChangeMesh("Purple");
-                print("Force");  //Purple
-                elementType = ElementType.Type.Force;
-                break;
-            case 2:
-                weapon.ChangeMesh("Blue");
-                print("Water");  //Blue
-                elementType = ElementType.Type.Water;
-                break;
+            switch (school)
+            {
+                case 0:
+                    weapon.ChangeMesh("Red");
+                    print("Lightning");  //Red
+                    elementType = ElementType.Type.Lightning;
+                    break;
+                case 1:
+                    weapon.ChangeMesh("Purple");
+                    print("Force");  //Purple
+                    elementType = ElementType.Type.Force;
+                    break;
+                case 2:
+                    weapon.ChangeMesh("Blue");
+                    print("Water");  //Blue
+                    elementType = ElementType.Type.Water;
+                    break;
+            }
         }
     }
 }

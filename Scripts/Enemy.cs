@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
 
-    
+    public List<GameObject> friendlies;
 
     private int baseHealth, baseDamage;
     public int currentHealth, currentDamage;
@@ -54,6 +54,7 @@ public class Enemy : MonoBehaviour
     public bool reachedDistance;
     private Vector3 oldPos, oldRot;
 
+    public Transform LAUNCHPOINT;
 
     //for attacking
     public Transform spawnPos;
@@ -66,25 +67,40 @@ public class Enemy : MonoBehaviour
 
     public string BrainState = "NEUTRAL";
 
-    public GameObject[] ArcherWeapons;
-    public GameObject[] ArcherHeads;
-    public GameObject[] ArcherBacks;
+    public GameObject[] ArcherWeapons, WarriorWeapons, WarriorShields, MageWeapons, MageShields;
+    public GameObject[] ArcherHeads, WarriorHeads, MageHeads;
+    public GameObject[] ArcherBacks, WarriorBacks, MageBacks;
 
+    
+    
     private NavMeshObstacle obstacle;
 
     public EnemyProfiles myProfile;
 
+
+    public bool NONMOVINGENEMY = true;
+
     void Start()
     {
+        BrainState = "NEUTRAL";
 
+        friendlies = new List<GameObject>();
+        
         obstacle = GetComponent<NavMeshObstacle>();
         navAgent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         outlineScript = GetComponent<Outline>();
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-        
-        StartCoroutine(BrainTick());
 
+        if (NONMOVINGENEMY)
+        {
+            obstacle.enabled = false;
+            navAgent.enabled = false;
+        }
+
+
+        StartCoroutine(BrainTick());
+        StartCoroutine(InformCheck());
        
     }
 
@@ -116,13 +132,26 @@ public class Enemy : MonoBehaviour
 
     }
 
+    public void SpellTrigger()
+    {
+        GameObject fireball = spawnManager.fireballPool.get();
+        fireball.transform.position = LAUNCHPOINT.position;
+        fireball.transform.rotation = LAUNCHPOINT.rotation;
+        fireball.GetComponentInChildren<RFX1_TransformMotion>().Target = player.gameObject;
+        fireball.transform.LookAt(player.transform.position);
+        fireball.SetActive(true);
+        fireball.GetComponent<DisableAfter>().Begin();
+
+    }
+
     void HandleAI()
     {
+
         if (reachedDistance)
         {
             anim.SetBool("Walking", false);
             anim.SetBool("Running", false);
-            transform.LookAt(player.transform);
+           // transform.LookAt(player.transform);
 
         }
     }
@@ -146,99 +175,200 @@ public class Enemy : MonoBehaviour
 
     }
 
-    IEnumerator BrainTick()
+    IEnumerator InformCheck()
     {
         for(; ; )
         {
-            if (reachedDistance) { BrainState = "NEUTRAL"; } else { BrainState = "MOVING"; }
-            bool changedstate = false;
+            yield return new WaitForSeconds(0.5f);
+            friendlies = spawnManager.inform();
+                
+                
+            
+        }
+    }
 
-            //thoughts and decisions
-
-            int playerScore = player.currentScore;
-            bool playerShield = player.shieldActive;
-
-
-
-            if(BrainState == "NEUTRAL")
+    public GameObject NearestEnemy()
+    {
+        float dist = Mathf.Infinity;
+        GameObject tempE = null;
+        foreach (GameObject e in friendlies.ToArray())
+        {
+            float tempdis = Vector3.Distance(transform.position, e.transform.position);
+            if(tempdis < dist && tempdis != 0)
             {
-                anim.SetBool("Aiming", true);
-                //SHIELD?
-                int chance = Random.Range(0, 10);
-                if (playerScore >= 8)
+                dist = tempdis;
+                tempE = e;
+            }
+            
+        }
+        return tempE;
+    }
+    IEnumerator BrainTick()
+    {
+        for (; ; )
+        {
+            if (!NONMOVINGENEMY)
+            {
+                if (pathComplete() || navAgent.enabled == false) { BrainState = "NEUTRAL"; } else { BrainState = "MOVING"; }
+                bool changedstate = false;
+
+                //thoughts and decisions
+
+                int playerScore = player.currentScore;
+                bool playerShield = player.shieldActive;
+
+
+
+                if (BrainState == "NEUTRAL")
                 {
-                    if (chance == playerScore)
-                    {                       
-                        BrainState = "SHIELDING";
-                        Shield();
+
+                    if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", true); }
+                    //SHIELD?
+
+                    int chance = Random.Range(0, 10);
+                    if (playerScore >= 8)
+                    {
+                        if (chance == playerScore)
+                        {
+                            BrainState = "SHIELDING";
+                            Shield();
+                            changedstate = true;
+                        }
+                    }
+
+                    //RUN AT PLAYER?
+                    chance = Random.Range(0, 100);
+                    if (playerShield)
+                        chance = Random.Range(0, 5);
+
+                    if (chance == 3)
+                    {
+                        BrainState = "RUSHING";
+                        RushPlayer();
                         changedstate = true;
                     }
-                }
 
-                //RUN AT PLAYER?
-                chance = Random.Range(0, 100);
-                if (playerShield)                 
-                    chance = Random.Range(0, 5);                
-
-                if (chance == 3 )
-                {
-                    BrainState = "RUSHING";
-                    RushPlayer();
-                    changedstate = true;
-                }
-
-                //OVERPOWER?
-                chance = Random.Range(0,50);
-                if (chance == 2)
-                {
-                    changedstate = true;
-                    OverPower();
-                }
-
-                //DEMON
-                chance = Random.Range(0, 20);
-                if(chance == 10)
-                {
-                    changedstate = true;
-                    Morph();
-
-                }
-
-
-
-
-                if (!changedstate)
-                {
-                    chance = Random.Range(0, 2);
-                    if (chance == 1)
+                    //OVERPOWER?
+                    chance = Random.Range(0, 200);
+                    if (chance == 2)
                     {
-                        //attack
-                        anim.SetTrigger("Longbow");
-                        anim.SetBool("Aiming", false);
+                        changedstate = true;
+                        OverPower();
+                    }
+
+                    //DEMON
+                    chance = Random.Range(0, 60);
+                    if (chance == 10)
+                    {
+                        changedstate = true;
+                        Morph();
+
+                    }
+
+
+
+
+                    if (!changedstate)
+                    {
+                        chance = Random.Range(0, 2);
+                        if (chance == 1)
+                        {
+                            //attack
+                            anim.SetTrigger(myProfile.attack1);
+                            if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+
+                        }
+                    }
+                    else
+                    {
+                        if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
                     }
                 }
                 else
                 {
-                    anim.SetBool("Aiming", false);
+                    if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+
+
                 }
+
+
+
+
+                //score
+
+
+                if (overpowered)
+                {
+                    yield return new WaitForSeconds(1);
+                }
+
+                yield return new WaitForSeconds(Random.Range(3, 7));
             }
             else
             {
-                anim.SetBool("Aiming", false);
+                transform.LookAt(player.transform.position);
+                bool changedstate = false;
+
+                //thoughts and decisions
+
+                int playerScore = player.currentScore;
+                bool playerShield = player.shieldActive;
+
+                if (BrainState == "NEUTRAL")
+                {
+
+                    if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", true); }
+                    //SHIELD?
+
+                    int chance = Random.Range(0, 10);
+                    if (playerScore >= 8)
+                    {
+                        if (chance == playerScore)
+                        {
+                            BrainState = "SHIELDING";
+                            Shield();
+                            changedstate = true;
+                        }
+                    }
+
+
+                    //OVERPOWER?
+                    chance = Random.Range(0, 200);
+                    if (chance == 2)
+                    {
+                        changedstate = true;
+                        OverPower();
+                    }
+
+                    //DEMON
+                    chance = Random.Range(0, 80);
+                    if (chance == 10)
+                    {
+                        changedstate = true;
+                        Morph();
+
+                    }
+
+                    if (!changedstate)
+                    {
+                        chance = Random.Range(0, 2);
+                        if (chance == 1)
+                        {
+                            //attack
+                            anim.SetTrigger(myProfile.attack1);
+                            if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+
+                        }
+                    }
+                    else
+                    {
+                        if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+                    }
+                }
+
+
+                yield return new WaitForSeconds(Random.Range(4, 14));
             }
-
-
-
-
-            //score
-
-
-            if(overpowered)
-            {
-                yield return new WaitForSeconds(1);
-            }
-
-            yield return new WaitForSeconds(Random.Range(3,7));
         }
     }
 
@@ -358,6 +488,7 @@ public class Enemy : MonoBehaviour
         {
             if (!navAgent.hasPath || navAgent.velocity.sqrMagnitude == 0f)
             {
+                transform.LookAt(player.transform.position);
                 return true;
             }
         }
@@ -367,119 +498,128 @@ public class Enemy : MonoBehaviour
 
     bool playerCheck()
     {
-        if (Vector3.Distance(player.transform.position, transform.position) <= myProfile.baseDistance)
+        if (Vector3.Distance(player.transform.position, transform.position) <= myProfile.baseDistance -1)
         {
             return true;
         }
+        
         return false;
     }
 
     void Update()
     {
-        if (navAgent.enabled)
+        if (!NONMOVINGENEMY)
         {
-            reachedDistance = pathComplete();
-        }
+            if (navAgent.enabled)
+            {
+                reachedDistance = pathComplete();
+            }
 
-        if (reachedDistance)
-        {
-            navAgent.enabled = false;
-            obstacle.enabled = true;
+            if (reachedDistance)
+            {
+                navAgent.enabled = false;
+                obstacle.enabled = true;
 
-        }
+            }
 
-        if (!playerCheck())
-        {
-            navAgent.enabled = true;
-            obstacle.enabled = false;
-        }
-        
-
-        HandleAI();
+            if (!playerCheck())
+            {
+                navAgent.enabled = true;
+                obstacle.enabled = false;
+            }
 
 
-        if (targetted)
-        {
-            outlineScript.enabled = true;
-        }
-        else
-        {
-            outlineScript.enabled = false;
-        }
+            HandleAI();
 
-        if (!rooted && !frozen && !bound && spawned)
-        {
-            
-            if (!navAgent)
-                return;
-            if (!navAgent.enabled)
-                return;
-            navAgent.speed = maxSpeed;
-            navAgent.isStopped = false;
-            navAgent.destination = GameObject.FindGameObjectWithTag("Finish").transform.position;
-            float dist = navAgent.remainingDistance;
 
-            if (dist != Mathf.Infinity && navAgent.pathStatus == NavMeshPathStatus.PathComplete && navAgent.remainingDistance <= navAgent.stoppingDistance)
-            { //Arrived.
-                atDesination = true;
-                if (navAgent.speed > 0.5f)
-                {
-                    anim.SetBool("Walking", false);
+            if (targetted)
+            {
+                outlineScript.enabled = true;
+            }
+            else
+            {
+                outlineScript.enabled = false;
+            }
+
+            if (!rooted && !frozen && !bound && spawned)
+            {
+
+                if (!navAgent)
+                    return;
+                if (!navAgent.enabled)
+                    return;
+                navAgent.speed = maxSpeed;
+                navAgent.isStopped = false;
+                navAgent.destination = GameObject.FindGameObjectWithTag("Finish").transform.position;
+                float dist = navAgent.remainingDistance;
+
+                if (dist != Mathf.Infinity && navAgent.pathStatus == NavMeshPathStatus.PathComplete && navAgent.remainingDistance <= navAgent.stoppingDistance)
+                { //Arrived.
+                    atDesination = true;
+                    if (navAgent.speed > 0.5f)
+                    {
+                        anim.SetBool("Walking", false);
+                    }
+                    if (navAgent.speed > 3f)
+                    {
+                        anim.SetBool("Running", false);
+                    }
                 }
-                if (navAgent.speed > 3f)
+                else
                 {
-                    anim.SetBool("Running", false);
+                    if (navAgent.speed > 0.5f)
+                    {
+                        anim.SetBool("Walking", true);
+                    }
+                    if (navAgent.speed > 3f)
+                    {
+                        anim.SetBool("Running", true);
+                    }
+
+                    atDesination = false;
+
                 }
             }
             else
             {
-                if (navAgent.speed > 0.5f)
+                if (!navAgent)
+                    return;
+
+                if (rooted)
                 {
-                    anim.SetBool("Walking", true);
-                }
-                if (navAgent.speed > 3f)
-                {
-                    anim.SetBool("Running", true);
+                    rootSeconds -= 1 * Time.fixedDeltaTime;
+                    if (rootSeconds <= 0)
+                    {
+                        rooted = false;
+                        anim.SetBool("Rooted", false);
+                        stunCircles.SetActive(false);
+                    }
+
+
+                    anim.SetBool("Running", false);
+                    anim.SetBool("Walking", false);
+                    navAgent.destination = transform.position;
                 }
 
-                atDesination = false;
+                if (frozen)
+                {
+                    transform.position = lockPos.position;
+                    freezeSeconds -= 1 * Time.fixedDeltaTime;
+                    navAgent.destination = transform.position;
 
+                    if (freezeSeconds <= 0)
+                    {
+                        frozen = false;
+                        anim.speed = 1f;
+
+                    }
+                }
             }
         }
-        else
+
+        if (NONMOVINGENEMY)
         {
-            if (!navAgent)
-                return;
 
-            if (rooted)
-            {
-                rootSeconds -= 1 * Time.fixedDeltaTime;
-                if (rootSeconds <= 0)
-                {
-                    rooted = false;
-                    anim.SetBool("Rooted", false);
-                    stunCircles.SetActive(false);
-                }
-
-
-                anim.SetBool("Running", false);
-                anim.SetBool("Walking", false);
-                navAgent.destination = transform.position;
-            }
-
-            if (frozen)
-            {
-                transform.position = lockPos.position;
-                freezeSeconds -= 1 * Time.fixedDeltaTime;
-                navAgent.destination = transform.position;
-
-                if (freezeSeconds <= 0)
-                {
-                    frozen = false;
-                    anim.speed = 1f;
-
-                }
-            }
         }
     }
 
@@ -497,9 +637,12 @@ public class Enemy : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            lockPos = transform;
-            navAgent.speed = 0f;
-            navAgent.isStopped = true;
+            if (!NONMOVINGENEMY)
+            {
+                lockPos = transform;
+                navAgent.speed = 0f;
+                navAgent.isStopped = true;
+            }
             currentHealth = 0;
             anim.SetTrigger("Die");
             StartCoroutine(Die());
@@ -513,21 +656,117 @@ public class Enemy : MonoBehaviour
         spawnManager.Deceased(this.gameObject);
     }
 
+    void disableAll()
+    {
+        foreach (GameObject o in ArcherWeapons)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in ArcherHeads)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in ArcherBacks)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in WarriorWeapons)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in WarriorBacks)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in WarriorHeads)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in WarriorShields)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in MageWeapons)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in MageBacks)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in MageHeads)
+        {
+            o.SetActive(false);
+        }
+
+        foreach (GameObject o in MageShields)
+        {
+            o.SetActive(false);
+        }
+    }
     public void SetUp(EnemyProfiles profile)
     {
         myProfile = profile;
         int level = profile.Level;
+
+
+        disableAll();
         switch (profile.myClass)
         {
             case EnemyProfiles.Class.Archer:
-               
+
+
                 ArcherWeapons[level - 1].SetActive(true);
-                ArcherHeads[level - 1].SetActive(true);
-                ArcherWeapons[level - 1].SetActive(true);
+
+             
+                    ArcherHeads[level - 1].SetActive(true);
+
+          
+                    ArcherBacks[level - 1].SetActive(true);
+
                 break;
+
             case EnemyProfiles.Class.Swordie:
+
+
+
+                WarriorBacks[level - 1].SetActive(true);
+
+                
+                    WarriorHeads[level - 1].SetActive(true);
+
+                
+                    WarriorShields[level - 1].SetActive(true);
+
+               
+                    WarriorWeapons[level - 1].SetActive(true);
+
                 break;
             case EnemyProfiles.Class.Mage:
+
+
+
+
+                MageBacks[level - 1].SetActive(true);
+
+
+                MageHeads[level - 1].SetActive(true);
+
+
+                MageShields[level - 1].SetActive(true);
+
+
+                MageWeapons[level - 1].SetActive(true);
+
                 break;
         }
        
@@ -577,74 +816,32 @@ public class Enemy : MonoBehaviour
 
         setMesh();
 
+        if (!NONMOVINGENEMY)
+        {
+            maxSpeed = profile.baseSpeed;
+            navAgent.speed = maxSpeed;
+            navAgent.stoppingDistance = profile.randomDistance;
+            navAgent.isStopped = true;
+        }
 
-        maxSpeed = profile.baseSpeed;
-        navAgent.speed = maxSpeed;
-        navAgent.stoppingDistance = Random.Range(profile.baseDistance - 5 , profile.baseDistance + 10);
         
 
         anim.SetTrigger("Spawn");
-        navAgent.isStopped = true; 
+      
     }
 
-    /*
-    public void SetUp(int health, float speed, ElementType.Type element)
-    {
-        GetComponentInChildren<MeshRenderer>().enabled = true;
-        frozen = false;
-        lockedOn = false;
-        rooted = false;
-        anim.speed = 1f;
-        stunCircles.SetActive(false);
-        rootSeconds = 0f;
-        freezeSeconds = 0f;
-        foreach (GameObject o in blastObjects)
-        {
-            o.SetActive(false);
-        }
-
-        baseHealth = health;
-        currentHealth = baseHealth;
-        hpScript.HP = currentHealth;
-        elementType = element;
-        navAgent.speed = speed;
-        maxSpeed = speed;
-        setMesh();
-    }
-    */
 
     public void SpawnAnimFinished()
     {
         spawned = true;
-        navAgent.isStopped = false;
+        if (!NONMOVINGENEMY)
+        {
+            navAgent.isStopped = false;
+        }
     }
 
     void setMesh()
     {
-        /*
-        GameObject mesh = null;
-        bool neutral = false;
-        switch (elementType)
-        {
-            case ElementType.Type.Force:
-                mesh = ForceMesh;
-                break;
-            case ElementType.Type.Lightning:
-                mesh = LightningMesh;
-                break;
-            case ElementType.Type.Water:
-                mesh = WaterMesh;
-                break;
-            default:
-                neutral = true;
-                break;
-        }
-        if (!neutral)
-        {
-            mesh.SetActive(true);
-            mesh.GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect();
-        }
-        */
 
 
         bool neutral = false;

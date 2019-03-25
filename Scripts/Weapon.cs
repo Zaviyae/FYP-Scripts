@@ -147,6 +147,8 @@ public class Weapon : MonoBehaviour {
         else
             end = transform.position + (dir * 100);
 
+        
+        
         if (hit.transform.tag == "Enemy")
         {
             currentEnemy = hit.transform.gameObject.GetComponent<Enemy>();

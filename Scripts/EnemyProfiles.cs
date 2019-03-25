@@ -11,6 +11,11 @@ public class EnemyProfiles {
     public float baseSpeed = 2f;
     public float baseSize = 1f;
     public int Level = 1;
+
+    public float randomDistance;
+
+    public string attack1 = "AttackTrigger";
+
     public enum Class
     {
         Archer, Swordie, Mage
@@ -19,35 +24,34 @@ public class EnemyProfiles {
 
     public Class myClass;
 
-    public Dictionary<string, bool> availableThoughts = new Dictionary<string, bool>();
+  //  public Dictionary<string, bool> availableThoughts = new Dictionary<string, bool>();
 
 
     public class Archer : EnemyProfiles
     {
         public Archer(int level)
         {
+            attack1 = "Longbow";
             myClass = Class.Archer;
             Level = level;
             maxHealth = 40 * level;
             maxDamage *= level;
 
-            availableThoughts.Add("Aim", true);
-            availableThoughts.Add("Rush", true);
-            availableThoughts.Add("Shield", true);
 
+            randomDistance = Random.Range(baseDistance - 5, baseDistance + 10);
             switch (level)
             {
                 case 1:
-                    baseSize = 1f;
+                    baseSize = .6f;
                     break;
                 case 2:
-                    baseSize = 1.3f;
+                    baseSize = .7f;
                     break;
                 case 3:
-                    baseSize = 1.6f;
+                    baseSize = .8f;
                     break;
                 case 4:
-                    baseSize = 2f;
+                    baseSize = 1f;
                     break;
             }
         }
@@ -58,10 +62,29 @@ public class EnemyProfiles {
     {
         public Swordie(int level)
         {
+            
             myClass = Class.Swordie;
             Level = level;
-            maxHealth = 20;
+            maxHealth = 20 * level;
             baseDistance = 7;
+
+            randomDistance = Random.Range(baseDistance - 5, baseDistance + 10);
+            switch (level)
+            {
+                case 1:
+                    baseSize = .6f;
+                    break;
+                case 2:
+                    baseSize = .7f;
+                    break;
+                case 3:
+                    baseSize = .8f;
+                    break;
+                case 4:
+                    baseSize = 1f;
+                    break;
+            }
+
         }
 
     }
@@ -70,11 +93,28 @@ public class EnemyProfiles {
     {
         public Mage(int level)
         {
+            attack1 = "Cast1";
             myClass = Class.Mage;
             Level = level;
-            maxHealth = 30;
-            availableThoughts.Add("Aim", false);
-            availableThoughts.Add("Shield", true);
+            maxHealth = 30 * level;
+
+            randomDistance = Random.Range(baseDistance - 5, baseDistance + 10);
+
+            switch (level)
+            {
+                case 1:
+                    baseSize = .6f;
+                    break;
+                case 2:
+                    baseSize = .7f;
+                    break;
+                case 3:
+                    baseSize = .8f;
+                    break;
+                case 4:
+                    baseSize = 1f;
+                    break;
+            }
         }
       
     }
