@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GetTrigger : MonoBehaviour {
-
+    public bool flameTick;
+    Enemy enemy;
 	// Use this for initialization
 	void Start () {
 		
@@ -23,6 +24,17 @@ public class GetTrigger : MonoBehaviour {
             PowerUpThrow put = other.GetComponentInParent<PowerUpThrow>();
             put.ShieldTouch();
         }
+
+
+
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+
+
+
     }
 
     private void OnCollisionEnter(Collision other)
@@ -48,5 +60,9 @@ public class GetTrigger : MonoBehaviour {
             print(transform);
             put.ShieldTouch(other.relativeVelocity.magnitude, other, transform);
         }
+
+
     }
+
+
 }

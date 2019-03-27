@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ParticleCollisionHit : MonoBehaviour {
 
+
 	// Use this for initialization
 	void Start () {
 		
@@ -16,6 +17,9 @@ public class ParticleCollisionHit : MonoBehaviour {
 
     private void OnParticleCollision(GameObject other)
     {
-        GetComponentInParent<TargetBlast>().Hit();
+
+            GetComponentInParent<TargetBlast>().Hit();
+
+
     }
 }

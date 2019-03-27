@@ -16,13 +16,18 @@ public class Elemental : MonoBehaviour {
     public GameObject player;
     public bool useCustomSkill;
     public float lifeTime;
+    public bool close;
 
+    public bool flamethrower;
+    public GameObject flame;
    // public int skillID;
 
     public Skill[] skills;
 
     // Use this for initialization
     void Start () {
+        flamethrower = true;
+
         player = GameObject.FindGameObjectWithTag("Player");
         StartCoroutine("Check");
         StartCoroutine("Fire");
@@ -32,30 +37,34 @@ public class Elemental : MonoBehaviour {
             lifeTime = Random.Range(25, 80);
         }
         StartCoroutine(Destroy());
-	}
+        StartCoroutine(FlameTick());
+    }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-
+        flame.SetActive(close);
         if (target)
         {
             started = false;
             transform.LookAt(target.transform);
-            if (Vector3.Distance(transform.position, target.transform.position) <= 15)
+            if (Vector3.Distance(transform.position, target.transform.position) <= 4)
             {
-                Vector3 pos = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
+                Vector3 pos = new Vector3(target.transform.position.x, target.transform.position.y + 3, target.transform.position.z);
                 transform.position = Vector3.Lerp(transform.position, pos, 0.2f * Time.deltaTime);
+                close = true;
+                
             }
             else
             {
-                Vector3 pos = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
+                close = false;
+                Vector3 pos = new Vector3(target.transform.position.x, target.transform.position.y + 3, target.transform.position.z);
                 transform.position = Vector3.Lerp(transform.position, pos, 0.7f * Time.deltaTime);
             }
 
         }
         else
         {
-            
+            close = false;
             if (!started)
             {
                 StartCoroutine(RandomMove());
@@ -96,6 +105,22 @@ public class Elemental : MonoBehaviour {
             yield return new WaitForSeconds(.2f);
         }
     
+    }
+
+
+    IEnumerator FlameTick()
+    {
+        for (; ; )
+        {
+            if (flamethrower)
+            {
+                yield return new WaitForSeconds(0.15f);
+                if (close)
+                {
+                    target.GetComponent<Enemy>().TakeDamage(3, Color.cyan);
+                }
+            }
+        }
     }
 
     IEnumerator Fire()
@@ -164,50 +189,7 @@ public class Elemental : MonoBehaviour {
                 target.GetComponent<Enemy>().LockOn();
             }
 
-            /*   FINDING NEAREST ENEMY TO PLAYER OF CERTAIN ELEMENT.
-            foreach (GameObject g in potentials)
-            {
-                if (!g.GetComponent<Enemy>())
-                    break;
 
-                if (g.GetComponent<Enemy>().elementType == elementType  && Vector3.Distance(player.transform.position, g.transform.position) < 100f)
-                {
-                    filtered.Add(g);
-                }
-            }
-
-            float smallestdist = Mathf.Infinity;
-            GameObject tempTarget = null;
-            foreach (GameObject g in filtered)
-            {
-                float dist = Vector3.Distance(g.transform.position, player.transform.position);
-                if (dist < smallestdist)
-                {
-                    smallestdist = dist;
-                    tempTarget = g;
-                }
-            }
-            try
-            {
-                if (target)
-                {
-                    if(Vector3.Distance(player.transform.position, tempTarget.transform.position) < Vector3.Distance(player.transform.position, target.transform.position)){
-                        target = tempTarget;
-                    }
-                }
-                else
-                {
-                    target = tempTarget;
-                }
-
-
-
-            }
-            catch (System.Exception e)
-            {
-
-            }
-            */
         }
     }
 }

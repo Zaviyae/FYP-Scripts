@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class PlayerView : MonoBehaviour {
 
-    private Portal lookingAt;
+    public Portal lookingAt;
+
+    public List<Portal> lookingAts;
+
+    public bool firstTriggered = false;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag != "Portal") return;
 
         lookingAt = other.transform.GetComponent<Portal>();
+        lookingAts.Add(other.transform.GetComponent<Portal>());
 
         lookingAt.LookedAt();
     }
@@ -20,14 +25,17 @@ public class PlayerView : MonoBehaviour {
         if (other.tag != "Portal") return;
 
         lookingAt = other.transform.GetComponent<Portal>();
-
+        lookingAts.Remove(other.transform.GetComponent<Portal>());
         lookingAt.LookedAway();
         lookingAt = null;
     }
 
     public Portal getPortal()
     {
-        return lookingAt;
+        if (lookingAts.Count == 0) return null;
+
+        return lookingAts[lookingAts.Count-1];
+       // return lookingAt;
     }
 
 }

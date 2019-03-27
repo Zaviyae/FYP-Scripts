@@ -19,12 +19,15 @@ public class SpawnManager : MonoBehaviour {
     public GameObject fireballPrefab;
     public ObjectPool fireballPool;
 
+    public TMPro.TextMeshPro waveText;
 
     List<GameObject> availableSpawns;
     List<GameObject> unavailableSpawns;
 
-    void Start () {
+    public int maxEnemies; 
 
+    void Start () {
+        maxEnemies = 5;
         fireballPool = new ObjectPool(fireballPrefab, 100);
 
         activePool = new List<GameObject>();
@@ -32,28 +35,46 @@ public class SpawnManager : MonoBehaviour {
 
         availableEnemyTypes = new List<EnemyProfiles>();
         availableEnemyTypes.Add(new EnemyProfiles.Archer(1));
-        availableEnemyTypes.Add(new EnemyProfiles.Archer(2));
-        availableEnemyTypes.Add(new EnemyProfiles.Archer(3));
-        availableEnemyTypes.Add(new EnemyProfiles.Archer(4));
+       // availableEnemyTypes.Add(new EnemyProfiles.Archer(2));
+       // availableEnemyTypes.Add(new EnemyProfiles.Archer(3));
+       // availableEnemyTypes.Add(new EnemyProfiles.Archer(4));
 
         availableEnemyTypes.Add(new EnemyProfiles.Mage(1));
-        availableEnemyTypes.Add(new EnemyProfiles.Mage(2));
-        availableEnemyTypes.Add(new EnemyProfiles.Mage(3));
-        availableEnemyTypes.Add(new EnemyProfiles.Mage(4));
+       // availableEnemyTypes.Add(new EnemyProfiles.Mage(2));
+        // availableEnemyTypes.Add(new EnemyProfiles.Mage(3));
+        // availableEnemyTypes.Add(new EnemyProfiles.Mage(4));
+
+        availableEnemyTypes.Add(new EnemyProfiles.Healer(1));
+
 
         StartWave(0);
+        StartCoroutine(WaveCheck());
 
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 	}
 	
 	
 	void Update () {
-		
+
+        ElementType.Type playerElement = player.elementType;
+
+        foreach (GameObject e in activePool)
+        {
+            if(e.GetComponent<Enemy>().elementType == playerElement)
+            {
+                e.GetComponent<Enemy>().ElementShield(true);
+            }
+            else
+            {
+                e.GetComponent<Enemy>().ElementShield(false);
+            }
+        }
 	}
 
 
     public void StartWave(int waveNumber)
     {
+        waveText.text = "WAVE : " + (waveNumber + 1);
         availableSpawns = new List<GameObject>();
         unavailableSpawns = new List<GameObject>();
 
@@ -69,6 +90,7 @@ public class SpawnManager : MonoBehaviour {
         enemiesRemaining = waveAmount[waveNumber];
 
         StartCoroutine(SpawnTime(2f));
+        
 
     }
 
@@ -76,60 +98,73 @@ public class SpawnManager : MonoBehaviour {
     {
         yield return new WaitForSeconds(time);
         SpawnEnemy();
+        
     }
 
     void SpawnEnemy()
     {
-
-        EnemyProfiles[] enemyTypeArray = availableEnemyTypes.ToArray();
-
-        if (availableSpawns.Count > 0)
+        if (activePool.Count <= maxEnemies && enemiesRemaining > 0)
         {
-            // Vector3 spawnLoc = spawnRooms[Random.Range(0, spawnRooms.Length)].GetComponent<EnemySpawn>().spawn.position;
-            EnemySpawn chosenSpawn = availableSpawns[Random.Range(0, availableSpawns.Count)].GetComponent<EnemySpawn>();
-           
-            GameObject spawnedEnemy;
+            EnemyProfiles[] enemyTypeArray = availableEnemyTypes.ToArray();
 
-            
-            if (inactivePool.Count >= 1)
+            if (availableSpawns.Count > 0)
             {
-                spawnedEnemy = inactivePool.Pop();
-                activePool.Add(spawnedEnemy);
-                spawnedEnemy.transform.position = chosenSpawn.spawn.position; 
+                // Vector3 spawnLoc = spawnRooms[Random.Range(0, spawnRooms.Length)].GetComponent<EnemySpawn>().spawn.position;
+                EnemySpawn chosenSpawn = availableSpawns[Random.Range(0, availableSpawns.Count)].GetComponent<EnemySpawn>();
+
+                GameObject spawnedEnemy;
+
+
+                if (inactivePool.Count >= 1)
+                {
+                    spawnedEnemy = inactivePool.Pop();
+                    activePool.Add(spawnedEnemy);
+                    spawnedEnemy.transform.position = chosenSpawn.spawn.position;
+                }
+                else
+                {
+                    print(inactivePool.Count);
+                    spawnedEnemy = GameObject.Instantiate(enemyPrefab, chosenSpawn.spawn.position, Quaternion.identity);
+                    activePool.Add(spawnedEnemy);
+                }
+
+
+                spawnedEnemy.GetComponent<Enemy>().SetUp(enemyTypeArray[Random.Range(0, enemyTypeArray.Length)]);
+                spawnedEnemy.GetComponent<Enemy>().spawnManager = this;
+                spawnedEnemy.SetActive(true);
+
+                enemiesRemaining--;
+
+                chosenSpawn.currentEnemy = spawnedEnemy;
+                availableSpawns.Remove(chosenSpawn.gameObject);
+                unavailableSpawns.Add(chosenSpawn.gameObject);
+
             }
-            else
-            {
-                print(inactivePool.Count);
-                spawnedEnemy = GameObject.Instantiate(enemyPrefab, chosenSpawn.spawn.position, Quaternion.identity);
-                activePool.Add(spawnedEnemy);
-            }
-
-
-            spawnedEnemy.GetComponent<Enemy>().SetUp(enemyTypeArray[Random.Range(0, enemyTypeArray.Length)]);
-            spawnedEnemy.GetComponent<Enemy>().spawnManager = this;
-            spawnedEnemy.SetActive(true);
-
-            if (enemiesRemaining != 1)
-            {
-                StartCoroutine(SpawnTime(Random.Range(2, 8)));
-            }
-            enemiesRemaining--;
-
-            chosenSpawn.currentEnemy = spawnedEnemy;
-            availableSpawns.Remove(chosenSpawn.gameObject);
-            unavailableSpawns.Add(chosenSpawn.gameObject);
-
         }
 
+            StartCoroutine(SpawnTime(Random.Range(2, 8)));
+        
 
     }
 
     public void removeMe(EnemySpawn e)
     {
         unavailableSpawns.Remove(e.gameObject);
+        availableSpawns.Add(e.gameObject);
+       
+    }
+
+    IEnumerator WaveCheck()
+    {
+        for (; ; )
+        {
+            yield return new WaitForSeconds(5);
+            CheckWave();
+        }
     }
     void CheckWave()
     {
+
         if(enemiesRemaining == 0 && activePool.Count == 0)
         {
             print("wave complete");
@@ -143,7 +178,7 @@ public class SpawnManager : MonoBehaviour {
         inactivePool.Push(enemy);
         activePool.Remove(enemy);
         enemy.SetActive(false);
-        CheckWave();
+       
     }
 
     public List<GameObject> inform()

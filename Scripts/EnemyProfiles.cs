@@ -18,14 +18,39 @@ public class EnemyProfiles {
 
     public enum Class
     {
-        Archer, Swordie, Mage
+        Archer, Swordie, Mage, Healer
     }
 
 
     public Class myClass;
 
-  //  public Dictionary<string, bool> availableThoughts = new Dictionary<string, bool>();
 
+    public class Healer : EnemyProfiles
+    {
+        public Healer(int level)
+        {
+            myClass = Class.Healer;
+            Level = level;
+            maxHealth = 40 * level;
+            maxDamage = 1 * level;
+
+            switch (level)
+            {
+                case 1:
+                    baseSize = .6f;
+                    break;
+                case 2:
+                    baseSize = .7f;
+                    break;
+                case 3:
+                    baseSize = .8f;
+                    break;
+                case 4:
+                    baseSize = 1f;
+                    break;
+            }
+        }
+    }
 
     public class Archer : EnemyProfiles
     {

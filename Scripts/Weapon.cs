@@ -51,20 +51,20 @@ public class Weapon : MonoBehaviour {
                 returnedBeams.Add(beamStartb);
                 returnedBeams.Add(beamb);
                 returnedBeams.Add(beamEndb);
-                type = ElementType.Type.Water;
+                type = ElementType.Type.Blue;
                 break;
             case "Red":
                 returnedBeams.Add(beamStartr);
                 returnedBeams.Add(beamr);
                 returnedBeams.Add(beamEndr);
-                type = ElementType.Type.Lightning;
+                type = ElementType.Type.Red;
                 break;
 
             case "Purple":
                 returnedBeams.Add(beamStartp);
                 returnedBeams.Add(beamp);
                 returnedBeams.Add(beamEndp);
-                type = ElementType.Type.Force;
+                type = ElementType.Type.Purple;
                 break;
 
             default:
@@ -130,7 +130,7 @@ public class Weapon : MonoBehaviour {
 
     public void EndBeam()
     {
-        print("end beam");
+
         beamActive = false;
     }
 

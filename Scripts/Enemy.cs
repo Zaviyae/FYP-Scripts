@@ -14,7 +14,7 @@ public class Enemy : MonoBehaviour
     public ElementType.Type elementType;
     public HPScript hpScript;
 
-    public Material blue, gold, red;
+    public Material blue, red, purple;
     public NavMeshAgent navAgent;
     public Transform hpSpawnLoc;
     public Animator anim;
@@ -62,24 +62,26 @@ public class Enemy : MonoBehaviour
     private Player player;
 
 
-    public GameObject shield, overpower;
+    public GameObject shield, overpower,elementshield, elementshieldB, elementshieldP, elementshieldR;
     public bool overpowered, shielded, spawned;
 
     public string BrainState = "NEUTRAL";
 
-    public GameObject[] ArcherWeapons, WarriorWeapons, WarriorShields, MageWeapons, MageShields;
-    public GameObject[] ArcherHeads, WarriorHeads, MageHeads;
-    public GameObject[] ArcherBacks, WarriorBacks, MageBacks;
+    public GameObject[] ArcherWeapons, WarriorWeapons, WarriorShields, MageWeapons, MageShields, HealerWeapons;
+    public GameObject[] ArcherHeads, WarriorHeads, MageHeads, HealerHeads;
+    public GameObject[] ArcherBacks, WarriorBacks, MageBacks, HealerBacks;
 
-    
-    
+
+    public GameObject healEffect;
+
     private NavMeshObstacle obstacle;
 
     public EnemyProfiles myProfile;
 
-
+    public int timeAlive;
+    public bool supportEnemy;
     public bool NONMOVINGENEMY = true;
-
+    bool dead = false;
     void Start()
     {
         BrainState = "NEUTRAL";
@@ -98,10 +100,8 @@ public class Enemy : MonoBehaviour
             navAgent.enabled = false;
         }
 
-
-        StartCoroutine(BrainTick());
-        StartCoroutine(InformCheck());
        
+
     }
 
     void Shield()
@@ -181,8 +181,7 @@ public class Enemy : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
             friendlies = spawnManager.inform();
-                
-                
+       
             
         }
     }
@@ -202,6 +201,20 @@ public class Enemy : MonoBehaviour
             
         }
         return tempE;
+    }
+
+    public GameObject RandomEnemy()
+    {
+        return friendlies[Random.Range(0, friendlies.Count - 1)];
+    }
+
+    IEnumerator AliveCount()
+    {
+        for(; ; )
+        {
+            yield return new WaitForSecondsRealtime(1);
+            timeAlive++;
+        }
     }
     IEnumerator BrainTick()
     {
@@ -316,8 +329,10 @@ public class Enemy : MonoBehaviour
 
                 if (BrainState == "NEUTRAL")
                 {
-
+                    anim.SetBool("Healing", false);
                     if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", true); }
+
+                    /*
                     //SHIELD?
 
                     int chance = Random.Range(0, 10);
@@ -330,8 +345,8 @@ public class Enemy : MonoBehaviour
                             changedstate = true;
                         }
                     }
-
-
+                    */
+                    /*
                     //OVERPOWER?
                     chance = Random.Range(0, 200);
                     if (chance == 2)
@@ -339,24 +354,35 @@ public class Enemy : MonoBehaviour
                         changedstate = true;
                         OverPower();
                     }
-
+                    */
                     //DEMON
+                    int chance;
                     chance = Random.Range(0, 80);
-                    if (chance == 10)
+                    if (chance == 10 && !supportEnemy)
                     {
                         changedstate = true;
                         Morph();
 
                     }
 
-                    if (!changedstate)
+                    if (!changedstate && BrainState == "NEUTRAL")
                     {
-                        chance = Random.Range(0, 2);
+                        chance = Random.Range(0, 3);
+                        if (supportEnemy) chance = 1;
                         if (chance == 1)
                         {
                             //attack
-                            anim.SetTrigger(myProfile.attack1);
-                            if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+                            if (!supportEnemy)
+                            {
+                                anim.SetTrigger(myProfile.attack1);
+                                if (myProfile.myClass == EnemyProfiles.Class.Archer) { anim.SetBool("Aiming", false); }
+                            }
+                            else
+                            {
+                                //heal others
+                                BrainState = "HEALING";
+                                
+                            }
 
                         }
                     }
@@ -366,19 +392,57 @@ public class Enemy : MonoBehaviour
                     }
                 }
 
-
+                if (overpower) { yield return new WaitForSeconds(1); }
                 yield return new WaitForSeconds(Random.Range(4, 14));
             }
         }
     }
 
 
+    IEnumerator HealTick()
+    {
+        for(; ; )
+        {
+            if (BrainState == "HEALING")
+            {
+                float lowesthp = Mathf.Infinity;
+                Enemy enemyToHeal = null;
+                foreach (GameObject e in friendlies)
+                {
+                    if (!GameObject.ReferenceEquals(e, enemyToHeal)) e.GetComponent<Enemy>().healEffect.SetActive(false);
+                    float tmpHealth = e.GetComponent<Enemy>().currentHealth;
+                    if(tmpHealth < lowesthp)
+                    {
+                        lowesthp = tmpHealth;
+                        enemyToHeal = e.GetComponent<Enemy>();
+                    }
+                }
+                if (enemyToHeal != null) { if (enemyToHeal.myProfile.maxHealth == enemyToHeal.currentHealth) { } else { enemyToHeal.Heal(2, Color.green); healEffect.SetActive(true); anim.SetBool("Healing", true); } }
+            }
+
+            if (Random.Range(0, 300) == 1) BrainState = "NEUTRAL";
+
+            yield return new WaitForSeconds(.4f);
+        }
+    }
+
+    public void Heal(int health, Color color)
+    {
+        if (currentHealth <= 0) return;
+        if (currentHealth == myProfile.maxHealth) return;
+        hpScript.ChangeHP(+health, hpSpawnLoc.position, Vector3.up, 2f, color, "+ " + health.ToString());
+
+        currentHealth += health;
+
+        if (currentHealth > myProfile.maxHealth) currentHealth = myProfile.maxHealth;
+      
+    }
     public void SpawnArrow()
     {
         GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
         //newProj.GetComponent<RFX1_Target>().Target = player.transform.gameObject;
 
-        newProj.GetComponent<Projectile>().Override(ElementType.Type.Force);
+        newProj.GetComponent<Projectile>().Override(ElementType.Type.Purple);
     }
 
     public void LockOn()
@@ -399,9 +463,12 @@ public class Enemy : MonoBehaviour
 
     public void Freeze(float s)
     {
-        lockPos = transform;
-        navAgent.speed = 0f;
-        navAgent.isStopped = true;
+        if (!NONMOVINGENEMY)
+        {
+            lockPos = transform;
+            navAgent.speed = 0f;
+            navAgent.isStopped = true;
+        }
         anim.speed = 0;
         freezeSeconds = s;
         frozen = true;
@@ -508,6 +575,55 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+   
+        if (targetted)
+        {
+            outlineScript.enabled = true;
+        }
+        else
+        {
+            outlineScript.enabled = false;
+        }
+
+
+        if (rooted)
+        {
+            rootSeconds -= 1 * Time.fixedDeltaTime;
+            if (rootSeconds <= 0)
+            {
+                rooted = false;
+                anim.SetBool("Rooted", false);
+                stunCircles.SetActive(false);
+            }
+
+            if (!NONMOVINGENEMY)
+            {
+                anim.SetBool("Running", false);
+                anim.SetBool("Walking", false);
+                navAgent.destination = transform.position;
+            }
+        }
+
+        if (frozen)
+        {
+            if (!NONMOVINGENEMY)
+            {
+                transform.position = lockPos.position;
+
+                navAgent.destination = transform.position;
+            }
+
+
+            freezeSeconds -= 1 * Time.fixedDeltaTime;
+            if (freezeSeconds <= 0)
+            {
+                frozen = false;
+                anim.speed = 1f;
+
+            }
+        }
+
+
         if (!NONMOVINGENEMY)
         {
             if (navAgent.enabled)
@@ -532,14 +648,7 @@ public class Enemy : MonoBehaviour
             HandleAI();
 
 
-            if (targetted)
-            {
-                outlineScript.enabled = true;
-            }
-            else
-            {
-                outlineScript.enabled = false;
-            }
+
 
             if (!rooted && !frozen && !bound && spawned)
             {
@@ -585,35 +694,7 @@ public class Enemy : MonoBehaviour
                 if (!navAgent)
                     return;
 
-                if (rooted)
-                {
-                    rootSeconds -= 1 * Time.fixedDeltaTime;
-                    if (rootSeconds <= 0)
-                    {
-                        rooted = false;
-                        anim.SetBool("Rooted", false);
-                        stunCircles.SetActive(false);
-                    }
 
-
-                    anim.SetBool("Running", false);
-                    anim.SetBool("Walking", false);
-                    navAgent.destination = transform.position;
-                }
-
-                if (frozen)
-                {
-                    transform.position = lockPos.position;
-                    freezeSeconds -= 1 * Time.fixedDeltaTime;
-                    navAgent.destination = transform.position;
-
-                    if (freezeSeconds <= 0)
-                    {
-                        frozen = false;
-                        anim.speed = 1f;
-
-                    }
-                }
             }
         }
 
@@ -623,32 +704,49 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    public void TakeDamage(int damage, Color color)
+    {
+        CheckDeath();
+
+        if (currentHealth <= 0) return;
+        currentHealth -= damage;
+        hpScript.ChangeHP(-damage, hpSpawnLoc.position, Vector3.up, 2f, color, damage.ToString());
+        
+        anim.SetTrigger("TakeDamage");
+    }
 
     public void TakeDamage(int damage, ElementType.Type el)
     {
         float dF = damage;
         damage = Mathf.RoundToInt(dF *= ElementType.getDamageModifier(el, elementType));
 
+
+        CheckDeath();
         if (currentHealth <= 0) return;
-        
         hpScript.ChangeHP(-damage, hpSpawnLoc.position, Vector3.up, 20f, damage.ToString());
         currentHealth -= damage;
         anim.SetTrigger("TakeDamage");
 
+
+    }
+
+    void CheckDeath()
+    {
+        if (dead) return;
         if (currentHealth <= 0)
         {
+            dead = true;
             if (!NONMOVINGENEMY)
             {
                 lockPos = transform;
                 navAgent.speed = 0f;
                 navAgent.isStopped = true;
             }
+            player.AddScore(100 - timeAlive);
             currentHealth = 0;
             anim.SetTrigger("Die");
             StartCoroutine(Die());
         }
-
-
     }
 
     public void Explode()
@@ -712,9 +810,28 @@ public class Enemy : MonoBehaviour
         {
             o.SetActive(false);
         }
+        foreach (GameObject o in HealerBacks)
+        {
+            o.SetActive(false);
+        }
+        foreach (GameObject o in HealerHeads)
+        {
+            o.SetActive(false);
+        }
+        foreach (GameObject o in HealerWeapons)
+        {
+            o.SetActive(false);
+        }
     }
     public void SetUp(EnemyProfiles profile)
     {
+       
+        elementshieldB.SetActive(false);
+        elementshieldP.SetActive(false);
+        elementshieldR.SetActive(false);
+        elementshield = null;
+
+      player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         myProfile = profile;
         int level = profile.Level;
 
@@ -722,6 +839,13 @@ public class Enemy : MonoBehaviour
         disableAll();
         switch (profile.myClass)
         {
+            case EnemyProfiles.Class.Healer:
+                HealerWeapons[level - 1].SetActive(true);
+                HealerHeads[level - 1].SetActive(true);
+                HealerBacks[level - 1].SetActive(true);
+                supportEnemy = true;
+                break;
+
             case EnemyProfiles.Class.Archer:
 
 
@@ -732,6 +856,7 @@ public class Enemy : MonoBehaviour
 
           
                     ArcherBacks[level - 1].SetActive(true);
+                supportEnemy = false;
 
                 break;
 
@@ -749,6 +874,7 @@ public class Enemy : MonoBehaviour
 
                
                     WarriorWeapons[level - 1].SetActive(true);
+                supportEnemy = false;
 
                 break;
             case EnemyProfiles.Class.Mage:
@@ -766,6 +892,7 @@ public class Enemy : MonoBehaviour
 
 
                 MageWeapons[level - 1].SetActive(true);
+                supportEnemy = false;
 
                 break;
         }
@@ -792,21 +919,21 @@ public class Enemy : MonoBehaviour
 
 
 
-        int elementInt = Random.Range(0, 4);
+        int elementInt = Random.Range(0, 3);
 
         switch (elementInt)
         {
             case 0:
-                elementType = ElementType.Type.Force;
+                elementType = ElementType.Type.Purple;
+                elementshield = elementshieldP;
                 break;
             case 1:
-                elementType = ElementType.Type.Lightning;
+                elementType = ElementType.Type.Red;
+                elementshield = elementshieldR;
                 break;
             case 2:
-                elementType = ElementType.Type.Neutral;
-                break;
-            case 3:
-                elementType = ElementType.Type.Water;
+                elementType = ElementType.Type.Blue;
+                elementshield = elementshieldB;
                 break;
             default:
                 elementType = ElementType.Type.Neutral;
@@ -823,11 +950,14 @@ public class Enemy : MonoBehaviour
             navAgent.stoppingDistance = profile.randomDistance;
             navAgent.isStopped = true;
         }
-
-        
+        dead = false;
 
         anim.SetTrigger("Spawn");
-      
+        StartCoroutine(HealTick());
+        timeAlive = 0;
+        StartCoroutine(AliveCount());
+        waterBall.SetActive(false);
+        BrainState = "NEUTRAL";
     }
 
 
@@ -838,6 +968,11 @@ public class Enemy : MonoBehaviour
         {
             navAgent.isStopped = false;
         }
+
+        StartCoroutine(BrainTick());
+        StartCoroutine(InformCheck());
+
+        BrainState = "NEUTRAL";
     }
 
     void setMesh()
@@ -848,13 +983,13 @@ public class Enemy : MonoBehaviour
 
         switch (elementType)
         {
-            case ElementType.Type.Force:
+            case ElementType.Type.Purple:
+                baseMeshRenderer.material = purple;
+                break;
+            case ElementType.Type.Red:
                 baseMeshRenderer.material = red;
                 break;
-            case ElementType.Type.Lightning:
-                baseMeshRenderer.material = gold;
-                break;
-            case ElementType.Type.Water:
+            case ElementType.Type.Blue:
                 baseMeshRenderer.material = blue;
                 break;
             default:
@@ -869,8 +1004,9 @@ public class Enemy : MonoBehaviour
 
     IEnumerator Die()
     {
+        dead = true;
         deathEffect.SetActive(true);
-        
+     
 
         yield return new WaitForSeconds(2f);
        
@@ -880,6 +1016,19 @@ public class Enemy : MonoBehaviour
     {
         deathEffect.SetActive(false);
         spawnManager.Deceased(this.gameObject);
- 
+    
     }
+
+
+    public void suckTowards(GameObject position)
+    {
+        float gravityIntensity = Vector3.Distance(transform.position, position.transform.position) / 1;
+        position.GetComponent<Rigidbody>().AddForce((transform.position - position.transform.position) * gravityIntensity * position.GetComponent<Rigidbody>().mass * 1 * Time.smoothDeltaTime);
+        Debug.DrawRay(position.transform.position, transform.position - position.transform.position);
+    }
+    public void ElementShield(bool t)
+    {
+        elementshield.SetActive(t);
+    }
+
 }

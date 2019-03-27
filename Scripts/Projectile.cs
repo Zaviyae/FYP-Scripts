@@ -18,6 +18,8 @@ public class Projectile : MonoBehaviour {
 
     bool triggered;
 
+    private RFX4_EffectSettings rfx;
+
   //  void Start () {
        // rbody = this.GetComponent<Rigidbody>();
      //   sm = this.GetComponent<SmartMissile>();
@@ -36,6 +38,8 @@ public class Projectile : MonoBehaviour {
 
             var raycastCollision = GetComponentInChildren<RFX4_RaycastCollision>(true);
             if (raycastCollision != null) raycastCollision.CollisionEnter += CollisionEnter;
+            
+            rfx = GetComponent<RFX4_EffectSettings>();
         }
         catch (Exception e)
         {
@@ -59,7 +63,13 @@ public class Projectile : MonoBehaviour {
         {
             triggered = true;
             if(rbody) rbody.velocity = (rbody.velocity * 0.2f);
+
+            if (rfx)
+            {
+                rfx.Speed = (rfx.Speed * 0.5f);
+            }
         }
+
     }
 
     private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
@@ -91,8 +101,11 @@ public class Projectile : MonoBehaviour {
     public void Override(ElementType.Type elType)
     {
         elementType = elType;
-        rbody = this.GetComponent<Rigidbody>();
-        rbody.AddForce(transform.forward * speed);
+
+        /*
+            rbody = this.GetComponent<Rigidbody>();
+            rbody.AddForce(transform.forward * speed);
+        */
 
     }
 

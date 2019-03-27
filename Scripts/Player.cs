@@ -55,7 +55,7 @@ public class Player : MonoBehaviour {
 
     private int skillType = 0;
 
-    private ElementType.Type elementType;
+    public ElementType.Type elementType;
     public int damageModifier = 0;
 
     public Color alive, dead;
@@ -64,9 +64,72 @@ public class Player : MonoBehaviour {
     public int shieldPower, maxshieldPower;
     public bool shieldActive;
     public TextMeshProUGUI shieldText;
-   
+
+    public TextMeshPro scoreText;
+
+    public GameObject tornado;
+    public int score;
+
+    public TextMeshProUGUI skill1Text, skill2Text, skill3Text;
+    public Image skill1Image, skill2Image, skill3Image;
+
+    public SchoolTexts redTexts, blueTexts, purpleTexts;
+    List<Skill> skills;
+    Skill Skill1,Skill2,Skill3,RedSkill1,RedSkill2,RedSkill3,PurpleSkill1,PurpleSkill2,PurpleSkill3,BlueSkill1,BlueSkill2,BlueSkill3;
+    class Skill
+    {
+        public int cooldown;
+        public String skillName;
+        public bool available;
+        public int currentcooldowntime;
+
+        public Skill(int cooldown, String skillName)
+        {
+            this.cooldown = cooldown;
+            this.skillName = skillName;
+
+        }
+
+     
+    }
+
     void Start () {
-        
+        Skill1 = new Skill(60, "Tornado"); //0 in list
+        Skill2 = new Skill(30, "Placeholder2");
+        Skill3 = new Skill(30, "Placeholder3");
+        skills = new List<Skill>();
+        skills.Add(Skill1);
+        skills.Add(Skill2);
+        skills.Add(Skill3);
+
+        //Red School
+        RedSkill1 = new Skill(0, "RedBeam");
+        RedSkill2 = new Skill(10, "PlaceholderRed2");
+        RedSkill3 = new Skill(10, "PlaceholderRed3");
+
+        //Purple
+        PurpleSkill1 = new Skill(0, "PurpleBeam");
+        PurpleSkill2 = new Skill(10, "PlaceholderPurple2");
+        PurpleSkill3 = new Skill(10, "PlaceholderPurple3");
+
+        //Blue
+        BlueSkill1 = new Skill(0, "BlueBeam");
+        BlueSkill2 = new Skill(10, "PlaceholderBlue2");
+        BlueSkill3 = new Skill(10, "PlaceholderBlue3");
+
+        skills.Add(RedSkill1);
+        skills.Add(RedSkill2);
+        skills.Add(RedSkill3);
+
+        skills.Add(BlueSkill1);
+        skills.Add(BlueSkill2);
+        skills.Add(BlueSkill3);
+
+        skills.Add(PurpleSkill1);
+        skills.Add(PurpleSkill2);
+        skills.Add(PurpleSkill3);
+
+        score = 0;
         maxshieldPower = 100;
         shieldPower = maxshieldPower;
         
@@ -75,7 +138,6 @@ public class Player : MonoBehaviour {
         maxHealth = 100;
         currentHealth = maxHealth;
 
-       // wandMeshEffects = new PSMeshRendererUpdater[3];
         vrPlayer = this.GetComponent<Valve.VR.InteractionSystem.Player>();
         playerView = this.GetComponentInChildren<PlayerView>();
        
@@ -85,10 +147,90 @@ public class Player : MonoBehaviour {
 
         startPortal.gameObject.SetActive(false);
         fade = GetComponentInChildren<Valve.VR.SteamVR_Fade>();
-        
+  
+        scoreText.text = score.ToString();
+        StartCoroutine(ScoreTally());
+        StartCoroutine(Cooldowns());
         
 	}
-	
+
+    IEnumerator Cooldowns()
+    {
+        for(; ; )
+        {
+            yield return new WaitForSecondsRealtime(1);
+            foreach(Skill s in skills)
+            {
+                if (!s.available)
+                {
+                    if (s.currentcooldowntime <= 0)
+                    {
+                        s.available = true;
+  
+                        switch (s.skillName)
+                        {
+                            case "Tornado":
+                                skill1Text.enabled = false;
+
+                                break;
+
+                            case "PlaceholderBlue3":
+                                blueTexts.Skill3Cooldown.enabled = false;
+                                break;
+
+                            case "PlaceholderRed3":
+                                redTexts.Skill3Cooldown.enabled = false;
+                                break;
+
+                            case "PlaceholderPurple3":
+                                purpleTexts.Skill3Cooldown.enabled = false;
+                                break;
+                        }
+
+                    }
+                    else
+                    {
+
+                        float cooldowntime = s.cooldown;
+                        float cooldownremainingtime = s.currentcooldowntime;
+
+                        print(1 - (cooldownremainingtime / cooldowntime));
+                        print((1 - (cooldownremainingtime / cooldowntime) )* 255);
+                        switch (s.skillName)
+                        {
+                            case "Tornado":
+                                
+                                skill1Text.enabled = true;
+                                skill1Image.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))));
+                                skill1Text.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderBlue3":
+                                blueTexts.Skill3Cooldown.enabled = true;
+                                blueTexts.Skill3.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))) );
+                                blueTexts.Skill3Cooldown.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderRed3":
+                                redTexts.Skill3Cooldown.enabled = true;
+                                redTexts.Skill3.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))) );
+                                redTexts.Skill3Cooldown.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderPurple3":
+                                purpleTexts.Skill3Cooldown.enabled = true;
+                                purpleTexts.Skill3.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))) );
+                                purpleTexts.Skill3Cooldown.text = s.currentcooldowntime.ToString();
+                                break;
+                        }
+
+                        s.currentcooldowntime--;
+                    }
+
+                }
+            }
+        }
+    }
     public int calcDamage(int num)
     {
         float baseModifier = 1f;
@@ -140,6 +282,24 @@ public class Player : MonoBehaviour {
 
     }
 
+    public void AddScore(int s)
+    {
+        if (s < 0) return;
+        score += s;
+    }
+
+    IEnumerator ScoreTally()
+    {
+        for(; ; )
+        {
+            if(int.Parse(scoreText.text) < score)
+            {
+               
+                scoreText.text = (int.Parse(scoreText.text) + 1).ToString();
+            }
+            yield return new WaitForSecondsRealtime(0.05f);
+        }
+    }
 
 	void Update () {
         if (weapon) { weapon.modeText.text = elementType.ToString(); }
@@ -200,6 +360,8 @@ public class Player : MonoBehaviour {
 
     public void Beam(bool t)
     {
+        if (ableToFire && casting)
+        {
             if (t)
             {
                 if (skillType == 1)
@@ -226,16 +388,16 @@ public class Player : MonoBehaviour {
             }
             else
             {
-            if(weapon)
-                weapon.EndBeam();
+                if (weapon)
+                    weapon.EndBeam();
             }
-
+        }
     }
 
     public void Fire()
     {
  
-        if (ableToFire)
+        if (ableToFire && casting)
         {
 
             if (rInput.drawing) return;
@@ -299,6 +461,34 @@ public class Player : MonoBehaviour {
                         StartCoroutine(FireTime(1f));
                     }
                     break;
+                case 3:
+                    print("three");
+                    string skillName = "";
+                    switch (elementType)
+                    {
+                        case ElementType.Type.Blue:
+                             skillName = "PlaceholderBlue3";
+                            break;
+                        case ElementType.Type.Purple:
+                             skillName = "PlaceholderPurple3";
+                            break;
+                        case ElementType.Type.Red:
+                             skillName = "PlaceholderRed3";
+                            break;
+                    }
+
+                    foreach(Skill s in skills)
+                    {
+                        if(s.skillName == skillName)
+                        {
+                            if (s.available)
+                            {
+                                s.available = false;
+                                s.currentcooldowntime = s.cooldown;
+                            }
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -315,6 +505,25 @@ public class Player : MonoBehaviour {
     
     }
 
+    public void TornadoSkill()
+    {
+        if (Skill1.available)
+        {
+            Skill1.currentcooldowntime = Skill1.cooldown;
+            Skill1.available = false;
+            tornado.SetActive(true);
+            tornado.GetComponent<Tornado>().time = 20;
+            tornado.GetComponent<Tornado>().Summon();
+            ClearSpell();
+            clearRenders();
+        }
+        else
+        {
+            ClearSpell();
+            clearRenders();
+        }
+    }
+
     IEnumerator Hit(GameObject blast, GameObject target, int jumps)
     {
 
@@ -322,7 +531,7 @@ public class Player : MonoBehaviour {
 
         yield return new WaitForSeconds(1.2f);
 
-        GameObject newTarget = target.GetComponent<Enemy>().NearestEnemy();
+        GameObject newTarget = target.GetComponent<Enemy>().RandomEnemy();
 
         if (newTarget)
         {
@@ -528,6 +737,23 @@ public class Player : MonoBehaviour {
                     skillType = 3;
                     print("Skill 3");
                     casting = true;
+                    
+                    break;
+
+                case "VV":
+                    print("GOT V!");
+
+                    TornadoSkill();
+
+                    break;
+
+                case "GG":
+                    print("GOT G!");
+
+                    break;
+
+                case "MM":
+                    print("GOT M!");
                     break;
 
                 default:
@@ -576,8 +802,11 @@ public class Player : MonoBehaviour {
 
     }
 
+    
+
     public void BeamTimed()
     {
+        ClearSpell();
         CastSpell();
         weapon.beaming = false;
         // casting = false;
@@ -605,6 +834,10 @@ public class Player : MonoBehaviour {
 
     public void AssignElement()
     {
+        redTexts.gameObject.SetActive(false);
+        blueTexts.gameObject.SetActive(false);
+        purpleTexts.gameObject.SetActive(false);
+
         weapon = rInput.weapon;
         if (weapon)
         {
@@ -612,18 +845,21 @@ public class Player : MonoBehaviour {
             {
                 case 0:
                     weapon.ChangeMesh("Red");
-                    print("Lightning");  //Red
-                    elementType = ElementType.Type.Lightning;
+                    print("Red");  //Red
+                    elementType = ElementType.Type.Red;
+                    redTexts.gameObject.SetActive(true);
                     break;
                 case 1:
                     weapon.ChangeMesh("Purple");
-                    print("Force");  //Purple
-                    elementType = ElementType.Type.Force;
+                    print("Purple");  //Purple
+                    elementType = ElementType.Type.Purple;
+                    purpleTexts.gameObject.SetActive(true);
                     break;
                 case 2:
                     weapon.ChangeMesh("Blue");
-                    print("Water");  //Blue
-                    elementType = ElementType.Type.Water;
+                    print("Blue");  //Blue
+                    elementType = ElementType.Type.Blue;
+                    blueTexts.gameObject.SetActive(true);
                     break;
             }
         }
