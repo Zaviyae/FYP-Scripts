@@ -28,15 +28,17 @@ public class RiftInput : MonoBehaviour {
     public Valve.VR.InteractionSystem.Player vrPlayer;
 
     public Weapon weapon;
+    public GameObject shield;
 
     public Player player;
 
     public Valve.VR.InteractionSystem.Hand hand;
+    public Valve.VR.InteractionSystem.Hand leftHand;
 
     public bool drawing, switching, equipped = false;
     
     void Start () {
-
+        shield = null;
         try
         {
 
@@ -88,7 +90,10 @@ public class RiftInput : MonoBehaviour {
 
     private void FixedUpdate()
     {
-
+        if (shield == null && leftHand.currentAttachedObject && leftHand.currentAttachedObject.tag == "Shield")
+        {
+            shield = leftHand.currentAttachedObject;
+        }
         if (equipped == false && hand.currentAttachedObject && hand.currentAttachedObject.GetComponentInChildren<Weapon>())
         {
             equipped = true;

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Portal : MonoBehaviour
 {
+    public Portal nextLevelPortal;
+    public bool levelPortal;
     Vector3 startSize;
     Quaternion startRotation;
 

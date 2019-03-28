@@ -69,10 +69,11 @@ public class Player : MonoBehaviour {
 
     public GameObject tornado;
     public int score;
-
+    
     public TextMeshProUGUI skill1Text, skill2Text, skill3Text;
     public Image skill1Image, skill2Image, skill3Image;
 
+    private Image playerHealthBar;
     public SchoolTexts redTexts, blueTexts, purpleTexts;
     List<Skill> skills;
     Skill Skill1,Skill2,Skill3,RedSkill1,RedSkill2,RedSkill3,PurpleSkill1,PurpleSkill2,PurpleSkill3,BlueSkill1,BlueSkill2,BlueSkill3;
@@ -92,6 +93,8 @@ public class Player : MonoBehaviour {
 
      
     }
+    public GameObject hitBox, followHead;
+    public SpawnManager spawnManager;
 
     void Start () {
         Skill1 = new Skill(60, "Tornado"); //0 in list
@@ -308,6 +311,8 @@ public class Player : MonoBehaviour {
   
         if (teleporting)
         {
+            if (telePortal.levelPortal) { telePortal = telePortal.nextLevelPortal; spawnManager.LevelTrigger(); }
+
             telePortal.transform.gameObject.GetComponent<BoxCollider>().enabled = false;
             currentPortal.transform.gameObject.SetActive(true);
             currentPortal.childRotationTransform.gameObject.SetActive(true);
@@ -356,7 +361,34 @@ public class Player : MonoBehaviour {
 
             }
         }
+
+        if (rInput.shield != null)
+        {
+            if(playerHealthBar == null)
+            {
+                playerHealthBar = rInput.shield.GetComponent<Shield>().playerHealthBar;
+            }
+            playerHealthBar.fillAmount = currentHealth / maxHealth;
+        }
+
+        hitBox.transform.position = followHead.transform.position;
+        
 	}
+
+    public void ReportHit(int spellID, RaycastHit hit)
+    {
+        if(hit.transform.tag == "Shield")
+        {
+            print("BLOCKED");
+
+        }
+
+        if(hit.transform.tag == "Finish" || hit.transform.tag == "Player")
+        {
+            print("HIT PLAYER");
+            currentHealth -= 5;
+        }
+    }
 
     public void Beam(bool t)
     {

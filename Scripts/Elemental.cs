@@ -82,8 +82,11 @@ public class Elemental : MonoBehaviour {
             int sec = Random.Range(5, 15);
  
 
-            int randomx = Random.Range(-42, 42);
-            int randomz = Random.Range(-1, 90);
+            //int randomx = Random.Range(-42, 42);
+            //int randomz = Random.Range(-1, 90);
+
+            float randomx = Random.Range(player.transform.position.x - 10, player.transform.position.x + 10);
+            float randomz = Random.Range(player.transform.position.z - 1, player.transform.position.z + 10);
 
             movePoint = new Vector3(randomx, transform.position.y, randomz);
 
@@ -114,6 +117,10 @@ public class Elemental : MonoBehaviour {
         {
             if (flamethrower)
             {
+                if (target != null)
+                {
+                    if (target.GetComponent<Enemy>().currentHealth <= 0) target = null;
+                }
                 yield return new WaitForSeconds(0.15f);
                 if (close)
                 {

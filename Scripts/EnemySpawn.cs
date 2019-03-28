@@ -10,10 +10,13 @@ public class EnemySpawn : MonoBehaviour {
     public GameObject currentEnemy;
     public SpawnManager spawnManager;
 
+    public bool flySpot;
+
 	// Use this for initialization
 	void Start () {
         currentEnemy = null;
         StartCoroutine(Check());
+
 	}
 	
 	// Update is called once per frame

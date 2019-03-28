@@ -137,7 +137,11 @@ public class Enemy : MonoBehaviour
         GameObject fireball = spawnManager.fireballPool.get();
         fireball.transform.position = LAUNCHPOINT.position;
         fireball.transform.rotation = LAUNCHPOINT.rotation;
-        fireball.GetComponentInChildren<RFX1_TransformMotion>().Target = player.gameObject;
+        GameObject targ = GameObject.Instantiate(new GameObject());
+        targ.transform.position = player.transform.position;
+        fireball.GetComponentInChildren<RFX1_TransformMotion>().Target = targ;
+        fireball.GetComponentInChildren<RFX1_TransformMotion>().player = player;
+        Destroy(targ);
         fireball.transform.LookAt(player.transform.position);
         fireball.SetActive(true);
         fireball.GetComponent<DisableAfter>().Begin();
@@ -181,8 +185,8 @@ public class Enemy : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
             friendlies = spawnManager.inform();
-       
-            
+
+            transform.LookAt(player.transform);
         }
     }
 
@@ -393,7 +397,7 @@ public class Enemy : MonoBehaviour
                 }
 
                 if (overpower) { yield return new WaitForSeconds(1); }
-                yield return new WaitForSeconds(Random.Range(4, 14));
+                yield return new WaitForSeconds(Random.Range(4, 10));
             }
         }
     }
@@ -409,7 +413,7 @@ public class Enemy : MonoBehaviour
                 Enemy enemyToHeal = null;
                 foreach (GameObject e in friendlies)
                 {
-                    if (!GameObject.ReferenceEquals(e, enemyToHeal)) e.GetComponent<Enemy>().healEffect.SetActive(false);
+                    if (e != enemyToHeal) e.GetComponent<Enemy>().healEffect.SetActive(false);
                     float tmpHealth = e.GetComponent<Enemy>().currentHealth;
                     if(tmpHealth < lowesthp)
                     {
@@ -417,7 +421,7 @@ public class Enemy : MonoBehaviour
                         enemyToHeal = e.GetComponent<Enemy>();
                     }
                 }
-                if (enemyToHeal != null) { if (enemyToHeal.myProfile.maxHealth == enemyToHeal.currentHealth) { } else { enemyToHeal.Heal(2, Color.green); healEffect.SetActive(true); anim.SetBool("Healing", true); } }
+                if (enemyToHeal != null) { if (enemyToHeal.myProfile.maxHealth == enemyToHeal.currentHealth) { } else { enemyToHeal.Heal(2, Color.green); enemyToHeal.healEffect.SetActive(true); anim.SetBool("Healing", true); } }
             }
 
             if (Random.Range(0, 300) == 1) BrainState = "NEUTRAL";
@@ -706,13 +710,15 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(int damage, Color color)
     {
-        CheckDeath();
+
 
         if (currentHealth <= 0) return;
         currentHealth -= damage;
         hpScript.ChangeHP(-damage, hpSpawnLoc.position, Vector3.up, 2f, color, damage.ToString());
         
         anim.SetTrigger("TakeDamage");
+
+        CheckDeath();
     }
 
     public void TakeDamage(int damage, ElementType.Type el)
@@ -727,25 +733,29 @@ public class Enemy : MonoBehaviour
         currentHealth -= damage;
         anim.SetTrigger("TakeDamage");
 
-
+        CheckDeath();
     }
 
     void CheckDeath()
     {
-        if (dead) return;
+        
         if (currentHealth <= 0)
         {
-            dead = true;
+            
             if (!NONMOVINGENEMY)
             {
                 lockPos = transform;
                 navAgent.speed = 0f;
                 navAgent.isStopped = true;
             }
-            player.AddScore(100 - timeAlive);
-            currentHealth = 0;
-            anim.SetTrigger("Die");
-            StartCoroutine(Die());
+            if (!dead)
+            {
+                player.AddScore(100 - timeAlive);
+                currentHealth = 0;
+                anim.SetTrigger("Die");
+                StartCoroutine(Die());
+            }
+            dead = true;
         }
     }
 
@@ -969,9 +979,11 @@ public class Enemy : MonoBehaviour
             navAgent.isStopped = false;
         }
 
-        StartCoroutine(BrainTick());
-        StartCoroutine(InformCheck());
-
+        if (gameObject.active)
+        {
+            StartCoroutine(BrainTick());
+            StartCoroutine(InformCheck());
+        }
         BrainState = "NEUTRAL";
     }
 
