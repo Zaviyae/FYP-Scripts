@@ -16,6 +16,9 @@ public class TargetBlast : MonoBehaviour {
     bool hit;
     Enemy enemy;
     Player player;
+    RFX1_TransformMotion rfx;
+    public bool useRFX;
+    public string skillName;
 
     public enum blastType
     {
@@ -29,6 +32,8 @@ public class TargetBlast : MonoBehaviour {
 
     void Start()
     {
+        if (useRFX) { rfx = GetComponentInChildren<RFX1_TransformMotion>(); rfx.targetBlast = this; }
+        
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 
         var physicsMotion = GetComponentInChildren<RFX4_PhysicsMotion>(true);
@@ -72,7 +77,7 @@ public class TargetBlast : MonoBehaviour {
             enemy.Root(seconds);
             if (instantDamage)
             {
-                enemy.TakeDamage(player.calcDamage(2), type);
+                enemy.TakeDamage(player.calcDamage(skillName), type);
             }
         }
 
@@ -98,7 +103,7 @@ public class TargetBlast : MonoBehaviour {
             enemy.Freeze(seconds);
             if (instantDamage)
             {
-                enemy.TakeDamage(player.calcDamage(2), type);
+                enemy.TakeDamage(player.calcDamage(skillName), type);
             }
             else
             {
@@ -119,6 +124,7 @@ public class TargetBlast : MonoBehaviour {
 
     public void CustomObjectSpawn(int id)
     {
+        print(id);
         enemy.blastObjects[id].SetActive(false);
         enemy.blastObjects[id].SetActive(true);
 
@@ -181,7 +187,7 @@ public class TargetBlast : MonoBehaviour {
 
         if (playerControlled)
         {
-            enemy.TakeDamage(player.calcDamage(2), type);
+            enemy.TakeDamage(player.calcDamage(skillName), type);
         }
         else
         {

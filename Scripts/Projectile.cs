@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour {
     Rigidbody rbody;
-    SmartMissile sm;
+
 
     public GameObject explosionEffect;
 
@@ -20,12 +20,6 @@ public class Projectile : MonoBehaviour {
 
     private RFX4_EffectSettings rfx;
 
-  //  void Start () {
-       // rbody = this.GetComponent<Rigidbody>();
-     //   sm = this.GetComponent<SmartMissile>();
-       // rbody.AddForce(transform.forward * 400f);
-
-   //}
 
     void Start()
     {
@@ -74,6 +68,7 @@ public class Projectile : MonoBehaviour {
 
     private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
     {
+        /*
         if(e.HitGameObject.tag == "Enemy")
         {
             Enemy enemy = e.HitGameObject.transform.GetComponent<Enemy>();
@@ -85,7 +80,7 @@ public class Projectile : MonoBehaviour {
                 enemy.TakeDamage(player.GetComponent<Player>().calcDamage(1), elementType);
             }
         }
-
+        */
 
 
     }

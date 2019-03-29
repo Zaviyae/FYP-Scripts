@@ -7,15 +7,14 @@ using TMPro;
 
 public class Player : MonoBehaviour {
 
+    private bool gameStarted;
+
     private Valve.VR.InteractionSystem.Player vrPlayer;
 
     public int currentScore = 0;
     public GameObject shield;
 
     public GameObject target;
-
-    public Elemental[] Elementals;
-    public Elemental eFire, eWater, eForce;
 
     public GameObject[] LightningSkillSet;
     public GameObject[] WaterSkillSet;
@@ -65,7 +64,7 @@ public class Player : MonoBehaviour {
     public bool shieldActive;
     public TextMeshProUGUI shieldText;
 
-    public TextMeshPro scoreText;
+    public TextMeshProUGUI scoreText;
 
     public GameObject tornado;
     public int score;
@@ -75,20 +74,38 @@ public class Player : MonoBehaviour {
 
     private Image playerHealthBar;
     public SchoolTexts redTexts, blueTexts, purpleTexts;
-    List<Skill> skills;
-    Skill Skill1,Skill2,Skill3,RedSkill1,RedSkill2,RedSkill3,PurpleSkill1,PurpleSkill2,PurpleSkill3,BlueSkill1,BlueSkill2,BlueSkill3;
-    class Skill
+    List<Ability> abilities;
+    Ability Skill1,Skill2,Skill3,RedSkill1,RedSkill2,RedSkill3,PurpleSkill1,PurpleSkill2,PurpleSkill3,BlueSkill1,BlueSkill2,BlueSkill3;
+
+    class Ability
     {
         public int cooldown;
         public String skillName;
         public bool available;
         public int currentcooldowntime;
+        public int level;
+        public float exp, maxExp;
+        public int baseDamage;
 
-        public Skill(int cooldown, String skillName)
+        public Ability(int cooldown, String skillName, float maxExp, int damage)
         {
             this.cooldown = cooldown;
             this.skillName = skillName;
+            this.baseDamage = damage;
+            level = 1;
 
+        }
+
+        public void addExp(float e)
+        {
+            exp += e;
+            if(exp >= maxExp)
+            {
+                float tmp = exp - maxExp;
+
+                level++;
+                exp = tmp;
+            }
         }
 
      
@@ -97,42 +114,44 @@ public class Player : MonoBehaviour {
     public SpawnManager spawnManager;
 
     void Start () {
-        Skill1 = new Skill(60, "Tornado"); //0 in list
-        Skill2 = new Skill(30, "Placeholder2");
-        Skill3 = new Skill(30, "Placeholder3");
-        skills = new List<Skill>();
-        skills.Add(Skill1);
-        skills.Add(Skill2);
-        skills.Add(Skill3);
+        scoreText = null;
+        Skill1 = new Ability(60, "Tornado", 1000, 2); //0 in list
+        Skill2 = new Ability(30, "Placeholder2", 1000, 3);
+        Skill3 = new Ability(30, "Placeholder3", 1000, 3);
+        abilities = new List<Ability>();
+        abilities.Add(Skill1);
+        abilities.Add(Skill2);
+        abilities.Add(Skill3);
 
         //Red School
-        RedSkill1 = new Skill(0, "RedBeam");
-        RedSkill2 = new Skill(10, "PlaceholderRed2");
-        RedSkill3 = new Skill(10, "PlaceholderRed3");
+        RedSkill1 = new Ability(0, "RedBeam", 1000, 2);
+        RedSkill2 = new Ability(25, "PlaceholderRed2", 1000, 100);
+        RedSkill3 = new Ability(10, "PlaceholderRed3", 1000, 2);
 
         //Purple
-        PurpleSkill1 = new Skill(0, "PurpleBeam");
-        PurpleSkill2 = new Skill(10, "PlaceholderPurple2");
-        PurpleSkill3 = new Skill(10, "PlaceholderPurple3");
+        PurpleSkill1 = new Ability(0, "PurpleBeam", 1000, 2);
+        PurpleSkill2 = new Ability(25, "PlaceholderPurple2", 1000, 100);
+        PurpleSkill3 = new Ability(10, "PlaceholderPurple3", 1000, 2);
 
         //Blue
-        BlueSkill1 = new Skill(0, "BlueBeam");
-        BlueSkill2 = new Skill(10, "PlaceholderBlue2");
-        BlueSkill3 = new Skill(10, "PlaceholderBlue3");
+        BlueSkill1 = new Ability(0, "BlueBeam", 1000, 2);
+        BlueSkill2 = new Ability(25, "PlaceholderBlue2", 1000, 100);
+        BlueSkill3 = new Ability(10, "PlaceholderBlue3", 1000, 2);
 
-        skills.Add(RedSkill1);
-        skills.Add(RedSkill2);
-        skills.Add(RedSkill3);
+        abilities.Add(RedSkill1);
+        abilities.Add(RedSkill2);
+        abilities.Add(RedSkill3);
 
-        skills.Add(BlueSkill1);
-        skills.Add(BlueSkill2);
-        skills.Add(BlueSkill3);
+        abilities.Add(BlueSkill1);
+        abilities.Add(BlueSkill2);
+        abilities.Add(BlueSkill3);
 
-        skills.Add(PurpleSkill1);
-        skills.Add(PurpleSkill2);
-        skills.Add(PurpleSkill3);
+        abilities.Add(PurpleSkill1);
+        abilities.Add(PurpleSkill2);
+        abilities.Add(PurpleSkill3);
 
         score = 0;
+        
         maxshieldPower = 100;
         shieldPower = maxshieldPower;
         
@@ -151,7 +170,8 @@ public class Player : MonoBehaviour {
         startPortal.gameObject.SetActive(false);
         fade = GetComponentInChildren<Valve.VR.SteamVR_Fade>();
   
-        scoreText.text = score.ToString();
+
+        //scoreText.text = score.ToString();
         StartCoroutine(ScoreTally());
         StartCoroutine(Cooldowns());
         
@@ -162,7 +182,7 @@ public class Player : MonoBehaviour {
         for(; ; )
         {
             yield return new WaitForSecondsRealtime(1);
-            foreach(Skill s in skills)
+            foreach(Ability s in abilities)
             {
                 if (!s.available)
                 {
@@ -175,6 +195,18 @@ public class Player : MonoBehaviour {
                             case "Tornado":
                                 skill1Text.enabled = false;
 
+                                break;
+
+                            case "PlaceholderBlue2":
+                                blueTexts.Skill2Cooldown.enabled = false;
+                                break;
+
+                            case "PlaceholderRed2":
+                                redTexts.Skill2Cooldown.enabled = false;
+                                break;
+
+                            case "PlaceholderPurple2":
+                                purpleTexts.Skill2Cooldown.enabled = false;
                                 break;
 
                             case "PlaceholderBlue3":
@@ -197,8 +229,6 @@ public class Player : MonoBehaviour {
                         float cooldowntime = s.cooldown;
                         float cooldownremainingtime = s.currentcooldowntime;
 
-                        print(1 - (cooldownremainingtime / cooldowntime));
-                        print((1 - (cooldownremainingtime / cooldowntime) )* 255);
                         switch (s.skillName)
                         {
                             case "Tornado":
@@ -206,6 +236,24 @@ public class Player : MonoBehaviour {
                                 skill1Text.enabled = true;
                                 skill1Image.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))));
                                 skill1Text.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderBlue2":
+                                blueTexts.Skill2Cooldown.enabled = true;
+                                blueTexts.Skill2.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))));
+                                blueTexts.Skill2Cooldown.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderRed2":
+                                redTexts.Skill2Cooldown.enabled = true;
+                                redTexts.Skill2.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))));
+                                redTexts.Skill2Cooldown.text = s.currentcooldowntime.ToString();
+                                break;
+
+                            case "PlaceholderPurple2":
+                                purpleTexts.Skill2Cooldown.enabled = true;
+                                purpleTexts.Skill2.color = new Color(225, 225, 225, ((1 - (cooldownremainingtime / cooldowntime))));
+                                purpleTexts.Skill2Cooldown.text = s.currentcooldowntime.ToString();
                                 break;
 
                             case "PlaceholderBlue3":
@@ -234,10 +282,22 @@ public class Player : MonoBehaviour {
             }
         }
     }
-    public int calcDamage(int num)
+    public int calcDamage(String abilityName)
     {
-        float baseModifier = 1f;
+        //float baseModifier = 1f;
 
+        
+        foreach(Ability a in abilities)
+        {
+            if(a.skillName == abilityName)
+            {
+                print("DAMAGE CALC : " + a.skillName + " > CURRENT EXP < " + a.exp + " < CURRENT LEVEL > " + a.level);
+                return Mathf.RoundToInt((a.baseDamage * (a.level)) *( ((currentScore)/2)/2));
+            }
+        }
+        return 0;
+
+        /*
         switch (num)
         {
             case 1:       
@@ -255,7 +315,7 @@ public class Player : MonoBehaviour {
 
                 return 0;
         }
-
+        */
     }
 
 	public void Teleport()
@@ -295,10 +355,12 @@ public class Player : MonoBehaviour {
     {
         for(; ; )
         {
-            if(int.Parse(scoreText.text) < score)
-            {
-               
-                scoreText.text = (int.Parse(scoreText.text) + 1).ToString();
+            if (scoreText != null) {
+                if (int.Parse(scoreText.text) < score)
+                {
+
+                    scoreText.text = (int.Parse(scoreText.text) + 1).ToString();
+                }
             }
             yield return new WaitForSecondsRealtime(0.05f);
         }
@@ -307,6 +369,11 @@ public class Player : MonoBehaviour {
 	void Update () {
         if (weapon) { weapon.modeText.text = elementType.ToString(); }
        
+        if(!gameStarted && weapon && shield)
+        {
+            gameStarted = true;
+            spawnManager.StartGame();
+        }
         var healthProportion = (currentHealth / maxHealth);
   
         if (teleporting)
@@ -368,6 +435,10 @@ public class Player : MonoBehaviour {
             {
                 playerHealthBar = rInput.shield.GetComponent<Shield>().playerHealthBar;
             }
+            if(scoreText == null)
+            {
+                scoreText = rInput.shield.GetComponent<Shield>().score;
+            }
             playerHealthBar.fillAmount = currentHealth / maxHealth;
         }
 
@@ -388,6 +459,8 @@ public class Player : MonoBehaviour {
             print("HIT PLAYER");
             currentHealth -= 5;
         }
+
+
     }
 
     public void Beam(bool t)
@@ -424,12 +497,14 @@ public class Player : MonoBehaviour {
                     weapon.EndBeam();
             }
         }
+        if (!t && weapon)
+            weapon.EndBeam();
     }
 
     public void Fire()
     {
  
-        if (ableToFire && casting)
+        if (casting)
         {
 
             if (rInput.drawing) return;
@@ -473,26 +548,71 @@ public class Player : MonoBehaviour {
                     
                     weapon.Beam(schoolname);
 
+
+
+
                     break;
+
+
                 case 2:
-                    if (target)
+
+                    string sskillName = "";
+                    switch (elementType)
+                    {
+                        case ElementType.Type.Blue:
+                            sskillName = "PlaceholderBlue2";
+                            break;
+                        case ElementType.Type.Purple:
+                            sskillName = "PlaceholderPurple2";
+                            break;
+                        case ElementType.Type.Red:
+                            sskillName = "PlaceholderRed2";
+                            break;
+                    }
+
+                    foreach (Ability s in abilities)
+                    {
+                        if (s.skillName == sskillName)
+                        {
+                            if (s.available)
+                            {
+                                s.available = false;
+                                s.currentcooldowntime = s.cooldown;
+                                ableToFire = true;
+                                StartCoroutine(abilityScore(s));
+                            }
+                            else
+                            {
+                                ableToFire = false;
+                            }
+                        }
+                    }
+
+                    if (target && ableToFire)
                     {
                         if (skillSet[skillType - 1].GetComponent<TargetBlast>().useCustomObject)
                         {
                             target.GetComponent<Enemy>().spawnObject(skillSet[skillType - 1].GetComponent<TargetBlast>().customObjectID, true);
-                            HitNearby(skillSet[skillType - 1], target, 5);
+                            HitNearby(skillSet[skillType - 1], target, 3);
+                            ClearSpell();
+                            clearRenders();
                         }
                         else
                         {
-                            GameObject blast = GameObject.Instantiate(skillSet[skillType - 1], target.transform.position, target.transform.rotation);
-                            blast.GetComponent<TargetBlast>().target = target;
-                            blast.GetComponent<TargetBlast>().playerControlled = true;
+                           // GameObject blast = GameObject.Instantiate(skillSet[skillType - 1], target.transform.position, target.transform.rotation);
+                           // blast.GetComponent<TargetBlast>().target = target;
+                            //blast.GetComponent<TargetBlast>().playerControlled = true;
                             print("NON CUSTOM OBJECT");
                         }
                         ableToFire = false;
-                        StartCoroutine(FireTime(1f));
+
                     }
+
                     break;
+
+
+
+
                 case 3:
                     print("three");
                     string skillName = "";
@@ -509,7 +629,7 @@ public class Player : MonoBehaviour {
                             break;
                     }
 
-                    foreach(Skill s in skills)
+                    foreach(Ability s in abilities)
                     {
                         if(s.skillName == skillName)
                         {
@@ -517,6 +637,7 @@ public class Player : MonoBehaviour {
                             {
                                 s.available = false;
                                 s.currentcooldowntime = s.cooldown;
+                                StartCoroutine(abilityScore(s));
                             }
                         }
                     }
@@ -528,6 +649,16 @@ public class Player : MonoBehaviour {
             
             
         }
+    }
+
+    IEnumerator abilityScore(Ability a)
+    {
+
+        float tmp = score;
+        yield return new WaitForSeconds(10);
+        a.addExp((score - tmp) / 10);
+        print("added exp : " + (score - tmp) / 10 + " to : " + a.skillName);
+        
     }
 
     public void HitNearby(GameObject blast, GameObject target, int jumps)
@@ -561,11 +692,11 @@ public class Player : MonoBehaviour {
 
         jumps -= 1;
 
-        yield return new WaitForSeconds(1.2f);
-
+        yield return new WaitForSeconds(2f);
+        
         GameObject newTarget = target.GetComponent<Enemy>().RandomEnemy();
 
-        if (newTarget)
+        if (newTarget && newTarget != target)
         {
             newTarget.GetComponent<Enemy>().spawnObject(blast.GetComponent<TargetBlast>().customObjectID, true);
 
@@ -755,6 +886,28 @@ public class Player : MonoBehaviour {
                     weapon.beamSeconds = 20f * (1f + ((currentScore - 5) / 10f));
                     weapon.beaming = true;
                     casting = true;
+
+                    string aName = "";
+                    switch (elementType)
+                    {
+                        case ElementType.Type.Blue:
+                            aName = "BlueBeam";
+                            break;
+                        case ElementType.Type.Purple:
+                            aName = "PurpleBeam";
+                            break;
+                        case ElementType.Type.Red:
+                            aName = "RedBeam";
+                            break;
+                    }
+                    foreach (Ability s in abilities)
+                    {
+                        if (s.skillName == aName)
+                        {
+                            StartCoroutine(abilityScore(s));
+                        }
+                    }
+
                     break;
 
                 case "TW":

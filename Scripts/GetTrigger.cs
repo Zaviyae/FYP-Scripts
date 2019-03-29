@@ -18,6 +18,7 @@ public class GetTrigger : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
+    
         if(other.tag == "Ball")
         {
             print("got ball! ");
@@ -25,7 +26,7 @@ public class GetTrigger : MonoBehaviour {
             put.ShieldTouch();
         }
 
-
+    
 
     }
 
@@ -39,6 +40,7 @@ public class GetTrigger : MonoBehaviour {
 
     private void OnCollisionEnter(Collision other)
     {
+  
         print(other.transform.tag);
         if (other.transform.tag == "Shield")
         {
@@ -46,7 +48,7 @@ public class GetTrigger : MonoBehaviour {
             PowerUpThrow put = GetComponent<PowerUpThrow>();
             put.ShieldTouch();
         }
-
+      
     
         if (other.transform.tag == "Ball")
         {

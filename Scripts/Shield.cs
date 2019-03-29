@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 public class Shield : MonoBehaviour {
     public Image playerHealthBar;
-
-	// Use this for initialization
-	void Start () {
+    public TMPro.TextMeshProUGUI score;
+    public TMPro.TextMeshProUGUI wave;
+    // Use this for initialization
+    void Start () {
 		
 	}
 	

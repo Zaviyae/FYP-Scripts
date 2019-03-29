@@ -22,7 +22,8 @@ public class SpawnManager : MonoBehaviour {
     public GameObject fireballPrefab;
     public ObjectPool fireballPool;
 
-    public TMPro.TextMeshPro waveText;
+   // public TMPro.TextMeshPro waveText;
+    public TMPro.TextMeshProUGUI shieldWaveText;
 
     List<GameObject> availableSpawns;
     List<GameObject> unavailableSpawns;
@@ -167,13 +168,18 @@ public class SpawnManager : MonoBehaviour {
 
 
 
-        StartWave(currentWave);
-        StartCoroutine(WaveCheck());
+
 
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 	}
 	
-	
+	public void StartGame()
+    {
+        shieldWaveText = player.rInput.shield.GetComponent<Shield>().wave;
+        StartWave(currentWave);
+        StartCoroutine(WaveCheck());
+        
+    }
 	void Update () {
 
         ElementType.Type playerElement = player.elementType;
@@ -194,7 +200,7 @@ public class SpawnManager : MonoBehaviour {
 
     public void StartWave(Wave wave)
     {
-        waveText.text = "WAVE : " + (wave.waveNum);
+        shieldWaveText.text = "WAVE : " + (wave.waveNum);
         availableSpawns = new List<GameObject>();
         unavailableSpawns = new List<GameObject>();
 

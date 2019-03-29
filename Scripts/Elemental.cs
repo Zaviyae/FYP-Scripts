@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,7 +35,7 @@ public class Elemental : MonoBehaviour {
 
         if(lifeTime == 0)
         {
-            lifeTime = Random.Range(25, 80);
+            lifeTime = UnityEngine.Random.Range(25, 80);
         }
         StartCoroutine(Destroy());
         StartCoroutine(FlameTick());
@@ -79,17 +80,17 @@ public class Elemental : MonoBehaviour {
     {
         while (!target)
         {
-            int sec = Random.Range(5, 15);
+            int sec = UnityEngine.Random.Range(5, 15);
  
 
             //int randomx = Random.Range(-42, 42);
             //int randomz = Random.Range(-1, 90);
 
-            float randomx = Random.Range(player.transform.position.x - 10, player.transform.position.x + 10);
-            float randomz = Random.Range(player.transform.position.z - 1, player.transform.position.z + 10);
+            float randomx = UnityEngine.Random.Range(player.transform.position.x - 10, player.transform.position.x + 10);
+            float randomz = UnityEngine.Random.Range(player.transform.position.z - 1, player.transform.position.z + 10);
 
             movePoint = new Vector3(randomx, transform.position.y, randomz);
-
+            Search();
             yield return new WaitForSeconds(sec);
         }
         
@@ -124,7 +125,20 @@ public class Elemental : MonoBehaviour {
                 yield return new WaitForSeconds(0.15f);
                 if (close)
                 {
-                    target.GetComponent<Enemy>().TakeDamage(3, Color.cyan);
+                    Color damageColor = Color.black;
+                    switch (elementType)
+                    {
+                        case ElementType.Type.Blue:
+                            damageColor = Color.blue;
+                            break;
+                        case ElementType.Type.Red:
+                            damageColor = Color.yellow;
+                            break;
+                        case ElementType.Type.Purple:
+                            damageColor = Color.magenta;
+                            break;
+                    }
+                    target.GetComponent<Enemy>().TakeDamage(1, damageColor);
                 }
             }
         }
@@ -151,7 +165,7 @@ public class Elemental : MonoBehaviour {
 
                 
             }
-            float time = Random.Range(7, 20);
+            float time = UnityEngine.Random.Range(7, 20);
             yield return new WaitForSeconds(time);
         }
     }
@@ -174,29 +188,34 @@ public class Elemental : MonoBehaviour {
         }
         else
         {
-            filtered = new List<GameObject>();
-
-            foreach (GameObject g in potentials)
+            try
             {
-                if (g.GetComponent<Enemy>() && !g.GetComponent<Enemy>().lockedOn)
+                filtered = new List<GameObject>();
+
+                foreach (GameObject g in potentials)
                 {
-                    filtered.Add(g);
+                    if (!g.GetComponent<Enemy>().lockedOn)
+                    {
+                        filtered.Add(g);
+                    }
+
                 }
-             
-            }
 
-            if (target)
+                if (target)
+                {
+                    //nothing
+                }
+                else
+                {
+                    int randomEnemy = UnityEngine.Random.Range(0, filtered.Count);
+                    target = filtered[randomEnemy];
+                    target.GetComponent<Enemy>().LockOn();
+                }
+
+            }catch(Exception e)
             {
-                //nothing
-            }
-            else
-            {
-                int randomEnemy = Random.Range(0, filtered.Count);
-                target = filtered[randomEnemy];
-                target.GetComponent<Enemy>().LockOn();
-            }
 
-
+            }
         }
     }
 }

@@ -30,6 +30,7 @@ public class Weapon : MonoBehaviour {
     public MeshRenderer wandMesh;
     public Material red, purple, blue;
 
+    string currentschool;
 
     [Header("Adjustable Variables")]
     public float beamEndOffset = 1f; //How far from the raycast hit point the end effect is positioned
@@ -52,12 +53,14 @@ public class Weapon : MonoBehaviour {
                 returnedBeams.Add(beamb);
                 returnedBeams.Add(beamEndb);
                 type = ElementType.Type.Blue;
+                currentschool = "Blue";
                 break;
             case "Red":
                 returnedBeams.Add(beamStartr);
                 returnedBeams.Add(beamr);
                 returnedBeams.Add(beamEndr);
                 type = ElementType.Type.Red;
+                currentschool = "Red";
                 break;
 
             case "Purple":
@@ -65,6 +68,7 @@ public class Weapon : MonoBehaviour {
                 returnedBeams.Add(beamp);
                 returnedBeams.Add(beamEndp);
                 type = ElementType.Type.Purple;
+                currentschool = "Purple";
                 break;
 
             default:
@@ -185,7 +189,7 @@ public class Weapon : MonoBehaviour {
             if (currentEnemy)
             {
                 
-                currentEnemy.TakeDamage(player.calcDamage(1), type);
+                currentEnemy.TakeDamage(player.calcDamage(currentschool+"Beam"), type);
                 currentEnemy = null;
             }
         }

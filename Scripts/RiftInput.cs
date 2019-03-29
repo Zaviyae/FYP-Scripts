@@ -8,7 +8,7 @@ using System;
 
 public class RiftInput : MonoBehaviour {
 
- 
+    public GameObject shieldPickup, wandPickup;
     public SteamVR_Action_Single squeezeAction;
 
     public SteamVR_Action_Vector2 touchPadAction;
@@ -90,6 +90,10 @@ public class RiftInput : MonoBehaviour {
 
     private void FixedUpdate()
     {
+
+        if (shield != null) shieldPickup.transform.position = new Vector3(100, 100, 100);
+        if (weapon != null) wandPickup.transform.position = new Vector3(100, 100, 100);
+
         if (shield == null && leftHand.currentAttachedObject && leftHand.currentAttachedObject.tag == "Shield")
         {
             shield = leftHand.currentAttachedObject;
@@ -144,6 +148,11 @@ public class RiftInput : MonoBehaviour {
                 
                 if (SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.LeftHand)) return;
                 
+                player.Beam(false);
+            }
+
+            if (!SteamVR_Input._default.inActions.Draw.GetState(SteamVR_Input_Sources.Any) && !SteamVR_Input._default.inActions.Fire.GetState(SteamVR_Input_Sources.Any))
+            {
                 player.Beam(false);
             }
 

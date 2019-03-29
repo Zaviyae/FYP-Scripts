@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour {
             }
             else
             {
-                yield return new WaitForSeconds(Random.Range(10, 60));
+                yield return new WaitForSeconds(Random.Range(20, 80));
             }
 
             //int randomx = Random.Range(-10, 10);

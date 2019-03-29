@@ -1,4 +1,4 @@
-﻿using Exploder.Utils;
+﻿
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -979,7 +979,7 @@ public class Enemy : MonoBehaviour
             navAgent.isStopped = false;
         }
 
-        if (gameObject.active)
+        if (gameObject.activeSelf)
         {
             StartCoroutine(BrainTick());
             StartCoroutine(InformCheck());
@@ -1031,13 +1031,6 @@ public class Enemy : MonoBehaviour
     
     }
 
-
-    public void suckTowards(GameObject position)
-    {
-        float gravityIntensity = Vector3.Distance(transform.position, position.transform.position) / 1;
-        position.GetComponent<Rigidbody>().AddForce((transform.position - position.transform.position) * gravityIntensity * position.GetComponent<Rigidbody>().mass * 1 * Time.smoothDeltaTime);
-        Debug.DrawRay(position.transform.position, transform.position - position.transform.position);
-    }
     public void ElementShield(bool t)
     {
         elementshield.SetActive(t);

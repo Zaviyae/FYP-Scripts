@@ -26,8 +26,9 @@ public class HitBox : MonoBehaviour {
                     float fDamage = tBlastObject.GetComponent<TargetBlast>().damage * ElementType.getDamageModifier(tBlastObject.GetComponent<TargetBlast>().type, other.GetComponent<Enemy>().elementType);
                     print("AOE damage : " + Mathf.RoundToInt(fDamage));
 
-                
-                    other.GetComponent<Enemy>().TakeDamage(player.calcDamage(2), tBlastObject.GetComponent<TargetBlast>().type); 
+
+                print("DISABLE THIS.");
+                  //  other.GetComponent<Enemy>().TakeDamage(player.calcDamage(2), tBlastObject.GetComponent<TargetBlast>().type); 
             }
         }
     }
