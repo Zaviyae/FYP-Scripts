@@ -753,13 +753,10 @@ public class Player : MonoBehaviour {
     
     void clearRenders()
     {
+        
         try
         {
             if (sEffect) Destroy(sEffect);
-            foreach (PSMeshRendererUpdater g in wandMeshEffects)
-            {
-                g.transform.gameObject.SetActive(false);
-            }
 
             for (int i = 0; i < weapon.GetComponentInChildren<MeshRenderer>().materials.Length; i++)
             {
@@ -772,12 +769,14 @@ public class Player : MonoBehaviour {
                     Destroy(weapon.GetComponentInChildren<MeshRenderer>().materials[i]);
                 }
             }
-            
+            weapon.UpdateMesh(elementType, false);
         }
         catch(Exception e)
         {
 
         }
+
+        
     }
     
     public void ShieldUp(bool t)
@@ -947,23 +946,15 @@ public class Player : MonoBehaviour {
                     print("Unrecognised");
                     break;
             }
-            try
-            {
-                weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
-                weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
-            }
-            catch (Exception e)
-            {
-                print("failed for some reason");
-            }
 
+            weapon.UpdateMesh(elementType, true);
             
-            wandMeshEffects[school].transform.gameObject.SetActive(true);
-
-            wandMeshEffects[school].GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect();
         }
         else
         {
+
+            weapon.UpdateMesh(elementType, false);
+            /*
             try
             {
                 weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
@@ -977,7 +968,7 @@ public class Player : MonoBehaviour {
             {
                 g.transform.gameObject.SetActive(false);
             }
-
+            */
             sEffect = GameObject.Instantiate(failEffect, weapon.particleComplete.transform);
             print("Score too low");
         }
@@ -994,7 +985,7 @@ public class Player : MonoBehaviour {
         ClearSpell();
         CastSpell();
         weapon.beaming = false;
-        // casting = false;
+
     }
 
     public void IncrementSkillMode()

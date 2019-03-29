@@ -30,6 +30,8 @@ public class Weapon : MonoBehaviour {
     public MeshRenderer wandMesh;
     public Material red, purple, blue;
 
+    public GameObject redMesh, purpleMesh, blueMesh;
+
     string currentschool;
 
     [Header("Adjustable Variables")]
@@ -80,6 +82,49 @@ public class Weapon : MonoBehaviour {
 
     }
 
+    public void UpdateMesh(ElementType.Type el, bool y)
+    {
+            switch (el)
+            {
+                case ElementType.Type.Blue:
+                    transform.GetComponentInChildren<MeshRenderer>().material = blue;
+                    transform.GetComponentInChildren<MeshRenderer>().materials[0] = blue;
+                    ChangeMesh("Blue");
+                if (y)
+                {
+                    blueMesh.SetActive(true);
+                    blueMesh.GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect(wandMesh.gameObject);
+                }
+                    break;
+                case ElementType.Type.Red:
+                    transform.GetComponentInChildren<MeshRenderer>().material = red;
+                    transform.GetComponentInChildren<MeshRenderer>().materials[0] = red;
+                    ChangeMesh("Red");
+                if (y)
+                {
+                    redMesh.SetActive(true);
+                    redMesh.GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect(wandMesh.gameObject);
+                }
+                    break;
+                case ElementType.Type.Purple:
+                    transform.GetComponentInChildren<MeshRenderer>().material = purple;
+                    transform.GetComponentInChildren<MeshRenderer>().materials[0] = purple;
+                    ChangeMesh("Purple");
+                if (y)
+                {
+                    purpleMesh.SetActive(true);
+                    purpleMesh.GetComponent<PSMeshRendererUpdater>().UpdateMeshEffect(wandMesh.gameObject);
+                }
+                    break;
+            }
+        
+        if(!y)
+        {
+            blueMesh.SetActive(false);
+            redMesh.SetActive(false);
+            purpleMesh.SetActive(false);
+        }
+    }
     
     private void Start()
     {
