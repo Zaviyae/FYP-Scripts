@@ -5,7 +5,7 @@ using UnityEngine;
 public class EnemySpawn : MonoBehaviour {
 
     public bool active;
-    public ElementType.Type enemyType;
+    // public ElementType.Type enemyType;
     public Transform spawn;
     public GameObject currentEnemy;
     public SpawnManager spawnManager;

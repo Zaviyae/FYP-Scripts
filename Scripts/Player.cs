@@ -20,10 +20,10 @@ public class Player : MonoBehaviour {
     public GameObject[] WaterSkillSet;
     public GameObject[] ForceSkillSet;
 
-    public Dictionary<GameObject, GameObject> skillMap;
+   // public Dictionary<GameObject, GameObject> skillMap;
 
 
-    private GameObject projectile;
+   // private GameObject projectile;
     public PSMeshRendererUpdater[] wandMeshEffects;
     public GameObject failEffect;
     private bool clear;
@@ -34,7 +34,7 @@ public class Player : MonoBehaviour {
     public bool casting = false;
     public int school = 0; 
 
-    public bool canShootBullets = true;
+   // public bool canShootBullets = true;
     public GameObject neutralBullet;
 
     private Vector3 startPos ;

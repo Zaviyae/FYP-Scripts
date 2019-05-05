@@ -5,7 +5,7 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour {
 
 
-    public int[] waveAmount;
+   // public int[] waveAmount;
     public GameObject enemyPrefab;
     public Stack<GameObject>  inactivePool;
     public List<GameObject> activePool;
@@ -13,7 +13,7 @@ public class SpawnManager : MonoBehaviour {
     public float spawnTime;
 
     public Player player;
-    public List<EnemyProfiles> availableEnemyTypes;
+   // public List<EnemyProfiles> availableEnemyTypes;
 
     public GameObject[] currentSpawnRoomArray;
     public GameObject[] spawnRooms;
@@ -347,7 +347,7 @@ public class SpawnManager : MonoBehaviour {
         }
     }
 
-    public void Deceased(GameObject enemy)
+    public void EnemyDeceased(GameObject enemy)
     {
         inactivePool.Push(enemy);
         activePool.Remove(enemy);

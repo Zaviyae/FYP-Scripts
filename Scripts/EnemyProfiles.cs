@@ -18,7 +18,7 @@ public class EnemyProfiles {
 
     public enum Class
     {
-        Archer, Swordie, Mage, Healer
+        Archer, Mage, Healer
     }
 
 
@@ -83,36 +83,7 @@ public class EnemyProfiles {
         
     }
 
-    public class Swordie : EnemyProfiles
-    {
-        public Swordie(int level)
-        {
-            
-            myClass = Class.Swordie;
-            Level = level;
-            maxHealth = 20 * level;
-            baseDistance = 7;
 
-            randomDistance = Random.Range(baseDistance - 5, baseDistance + 10);
-            switch (level)
-            {
-                case 1:
-                    baseSize = .6f;
-                    break;
-                case 2:
-                    baseSize = .7f;
-                    break;
-                case 3:
-                    baseSize = .8f;
-                    break;
-                case 4:
-                    baseSize = 1f;
-                    break;
-            }
-
-        }
-
-    }
 
     public class Mage : EnemyProfiles
     {

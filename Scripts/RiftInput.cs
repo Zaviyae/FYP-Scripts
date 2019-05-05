@@ -17,7 +17,7 @@ public class RiftInput : MonoBehaviour {
 
     public GameObject drawingParticles;
 
-    public bool[,] vectorGrid;
+    //public bool[,] vectorGrid;
     public HashSet<Vector2> rawVectors = new HashSet<Vector2>();
 
     public int count = 1;
@@ -90,6 +90,7 @@ public class RiftInput : MonoBehaviour {
 
     private void FixedUpdate()
     {
+       // print("Local space : " + hand.transform.localPosition);
 
         if (shield != null) shieldPickup.transform.position = new Vector3(100, 100, 100);
         if (weapon != null) wandPickup.transform.position = new Vector3(100, 100, 100);
@@ -197,7 +198,7 @@ public class RiftInput : MonoBehaviour {
                 // Track(new Vector2(drawingParticles.transform.position.x, drawingParticles.transform.position.y));
                 Track(new Vector2(hand.transform.localPosition.x, hand.transform.localPosition.y));
                // print("World space : " + hand.transform.position );
-               // print("Local space : " + hand.transform.localPosition);
+               //print("Local space : " + hand.transform.localPosition);
 
                 drawingParticles = vrPlayer.rightHand.GetComponentInChildren<Weapon>().particleEmit;
                 

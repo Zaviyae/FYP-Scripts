@@ -9,11 +9,11 @@ public class Elemental : MonoBehaviour {
     public GameObject target = null;
     public GameObject[] potentials;
     public List<GameObject> filtered;
-    GameObject proj;
-    public Transform shootPoint;
-    public GameObject blastPrefab;
+   // GameObject proj;
+   // public Transform shootPoint;
+   // public GameObject blastPrefab;
     public Vector3 movePoint;
-    bool started;
+    bool targetStart;
     public GameObject player;
     public bool useCustomSkill;
     public float lifeTime;
@@ -46,7 +46,7 @@ public class Elemental : MonoBehaviour {
         flame.SetActive(close);
         if (target)
         {
-            started = false;
+            targetStart = false;
             transform.LookAt(target.transform);
             if (Vector3.Distance(transform.position, target.transform.position) <= 4)
             {
@@ -66,11 +66,11 @@ public class Elemental : MonoBehaviour {
         else
         {
             close = false;
-            if (!started)
+            if (!targetStart)
             {
                 StartCoroutine(RandomMove());
             }
-            started = true;
+            targetStart = true;
 
             transform.position = Vector3.Lerp(transform.position, movePoint, 0.5f * Time.deltaTime);
         }

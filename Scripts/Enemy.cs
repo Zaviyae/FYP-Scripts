@@ -550,7 +550,7 @@ public class Enemy : MonoBehaviour
         dementor.SetActive(true);
         dementor.GetComponent<RFX1_Target>().Target = GameObject.FindGameObjectWithTag("Player");
         dementor.transform.parent = null;
-        Explode();
+        ReportDeath();
     }
 
     protected bool pathComplete()
@@ -759,9 +759,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void Explode()
+    public void ReportDeath()
     {
-        spawnManager.Deceased(this.gameObject);
+        spawnManager.EnemyDeceased(this.gameObject);
     }
 
     void disableAll()
@@ -833,6 +833,7 @@ public class Enemy : MonoBehaviour
             o.SetActive(false);
         }
     }
+
     public void SetUp(EnemyProfiles profile)
     {
        
@@ -870,23 +871,6 @@ public class Enemy : MonoBehaviour
 
                 break;
 
-            case EnemyProfiles.Class.Swordie:
-
-
-
-                WarriorBacks[level - 1].SetActive(true);
-
-                
-                    WarriorHeads[level - 1].SetActive(true);
-
-                
-                    WarriorShields[level - 1].SetActive(true);
-
-               
-                    WarriorWeapons[level - 1].SetActive(true);
-                supportEnemy = false;
-
-                break;
             case EnemyProfiles.Class.Mage:
 
 
@@ -1027,7 +1011,7 @@ public class Enemy : MonoBehaviour
     public void AnimDeath()
     {
         deathEffect.SetActive(false);
-        spawnManager.Deceased(this.gameObject);
+        spawnManager.EnemyDeceased(this.gameObject);
     
     }
 

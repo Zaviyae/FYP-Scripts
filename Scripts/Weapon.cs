@@ -1,50 +1,116 @@
-﻿using System.Collections;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 04-02-2019
+// ***********************************************************************
+// <copyright file="Weapon.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Class Weapon.
+/// </summary>
 public class Weapon : MonoBehaviour {
 
+    /// <summary>
+    /// The Gameobject which is used for position to emit particles from.
+    /// </summary>
     public GameObject particleEmit;
-    public GameObject particleComplete;
-    public Text modeText;
-    public GameObject enemyTarget;
-    public GameObject shield;
+    /// <summary>
+    /// The player
+    /// </summary>
     public Player player;
+    /// <summary>
+    /// If the beam should currently be active.
+    /// </summary>
     public bool beamActive;
-
+    /// <summary>
+    /// These are the instances of the start, beginning and end prefab for the currently chosen ElementType mode.
+    /// </summary>
     private GameObject ibeamStart, ibeam, ibeamEnd;
+    /// <summary>
+    /// The line renderer used for instantiating the beam.
+    /// </summary>
     private LineRenderer line;
+    /// <summary>
+    /// The current element type.
+    /// </summary>
     private ElementType.Type type;
-
+    /// <summary>
+    /// The current enemy the beam is hitting
+    /// </summary>
     public Enemy currentEnemy;
-
+    /// <summary>
+    /// How long the beam can be active.
+    /// </summary>
     public float beamSeconds = 0f;
-
+    /// <summary>
+    /// The text element used to display the cast score.
+    /// </summary>
     public Text scoreText;
-
+    /// <summary>
+    /// Is the beam currently showing
+    /// </summary>
     public bool beaming;
-
+    /// <summary>
+    /// The text element showing the beam seconds to the player
+    /// </summary>
     public Text beamCount;
-
+    /// <summary>
+    /// The wand mesh
+    /// </summary>
     public MeshRenderer wandMesh;
+    /// <summary>
+    /// The red, purple and blue materials to be used for the wand mesh.
+    /// </summary>
     public Material red, purple, blue;
-
+    /// <summary>
+    /// The red, purple and blue meshes to be used for the wand object.
+    /// </summary>
     public GameObject redMesh, purpleMesh, blueMesh;
-
+    /// <summary>
+    /// The current ElementType.Type as a string.
+    /// </summary>
     string currentschool;
-
+    /// <summary>
+    /// The beam end offset
+    /// </summary>
     [Header("Adjustable Variables")]
     public float beamEndOffset = 1f; //How far from the raycast hit point the end effect is positioned
+    /// <summary>
+    /// The texture scroll speed
+    /// </summary>
     public float textureScrollSpeed = 8f; //How fast the texture scrolls along the beam
+    /// <summary>
+    /// The texture length scale
+    /// </summary>
     public float textureLengthScale = 3; //Length of the beam texture
 
 
 
+    /// <summary>
+    /// Each individual start, end and middle beam prefab for every element type.
+    /// </summary>
     public GameObject beamStartb, beamb, beamEndb,
-            beamStartr, beamr, beamEndr,
-            beamStartp, beamp, beamEndp; //blue red and purple. The schools.
 
+            beamStartr, beamr, beamEndr,
+
+            beamStartp, beamp, beamEndp; 
+
+    /// <summary>
+    /// Returns the start, middle and end object for the appropriate ElementType.Type.
+    /// </summary>
+    /// <param name="colour">The colour.</param>
+    /// <returns>List&lt;GameObject&gt;.</returns>
     public List<GameObject> returnBeams(string colour)
     {
         List<GameObject> returnedBeams = new List<GameObject>();
@@ -82,6 +148,11 @@ public class Weapon : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Updates the mesh. Used for resetting meshes after a cast.
+    /// </summary>
+    /// <param name="el">The el.</param>
+    /// <param name="y">if set to <c>true</c> [y].</param>
     public void UpdateMesh(ElementType.Type el, bool y)
     {
             switch (el)
@@ -125,7 +196,10 @@ public class Weapon : MonoBehaviour {
             purpleMesh.SetActive(false);
         }
     }
-    
+
+    /// <summary>
+    /// Starts this instance.
+    /// </summary>
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
@@ -135,6 +209,10 @@ public class Weapon : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Changes the mesh. Changing the colour of the wand to the appropriate ElementType.Type.
+    /// </summary>
+    /// <param name="s">The s.</param>
     public void ChangeMesh(string s)
     {
         switch (s)
@@ -150,6 +228,10 @@ public class Weapon : MonoBehaviour {
                 break;
         }
     }
+    /// <summary>
+    /// Beams the specified ElementType.Type.
+    /// </summary>
+    /// <param name="school">The school.</param>
     public void Beam(string school)
     {
         
@@ -177,12 +259,20 @@ public class Weapon : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Ends the beam.
+    /// </summary>
     public void EndBeam()
     {
 
         beamActive = false;
     }
 
+    /// <summary>
+    /// Shoots the beam in direction from start.
+    /// </summary>
+    /// <param name="start">The start.</param>
+    /// <param name="dir">The direction.</param>
     void ShootBeamInDir(Vector3 start, Vector3 dir)
     {
         line.positionCount = 2;
@@ -224,6 +314,10 @@ public class Weapon : MonoBehaviour {
         line.sharedMaterial.mainTextureOffset -= new Vector2(Time.deltaTime * textureScrollSpeed, 0);
     }
 
+    /// <summary>
+    /// Applies damage to the current Enemy every .25f seconds.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator damageTick()
     {
         for (; ; )
@@ -241,6 +335,10 @@ public class Weapon : MonoBehaviour {
     }
 
 
+    /// <summary>
+    /// Ran once per frame.
+    /// Used for counting down beam seconds, enabling and disabling beam and updating the wand UI.
+    /// </summary>
     private void Update()
     {
         if (beaming)
@@ -287,25 +385,5 @@ public class Weapon : MonoBehaviour {
             }
         }
 
-        /*
-        RaycastHit hit;
-
-        if (Physics.Raycast(particleComplete.transform.position, particleComplete.transform.TransformDirection(Vector3.forward), out hit, 250f))
-        {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
-            Debug.Log("Did Hit");
-            if (enemyTarget)
-            {
-                enemyTarget.GetComponent<Enemy>().targetted = false;
-                enemyTarget = null;
-            }
-            
-            if(hit.transform.tag == "Enemy")
-            {
-                enemyTarget = hit.transform.gameObject;
-                enemyTarget.GetComponent<Enemy>().targetted = true;
-            }
-        }
-        */
     }
 }

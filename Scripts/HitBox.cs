@@ -19,7 +19,7 @@ public class HitBox : MonoBehaviour {
             if (!effectCollisionBox)
             {
                 GetComponentInParent<Player>().TakeDamage(10f);
-                other.GetComponent<Enemy>().Explode();
+                other.GetComponent<Enemy>().ReportDeath();
             }
             else
             {
