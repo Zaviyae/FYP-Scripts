@@ -1,4 +1,17 @@
-﻿using System.Collections;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 05-05-2019
+// ***********************************************************************
+// <copyright file="RiftInput.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
@@ -6,37 +19,91 @@ using System.Linq;
 using System.IO;
 using System;
 
+/// <summary>
+/// Class RiftInput.
+/// Used for handling all input from the rift controllers.
+/// </summary>
 public class RiftInput : MonoBehaviour {
 
+    /// <summary>
+    /// The shield and wand pickup objects
+    /// </summary>
     public GameObject shieldPickup, wandPickup;
+    /// <summary>
+    /// The rift input squeeze action
+    /// </summary>
     public SteamVR_Action_Single squeezeAction;
 
+    /// <summary>
+    /// The touch pad action
+    /// </summary>
     public SteamVR_Action_Vector2 touchPadAction;
 
 
 
+    /// <summary>
+    /// The drawing particles
+    /// </summary>
     public GameObject drawingParticles;
 
-    //public bool[,] vectorGrid;
+
+    /// <summary>
+    /// The raw vectors for gesture recognition
+    /// </summary>
     public HashSet<Vector2> rawVectors = new HashSet<Vector2>();
 
+    /// <summary>
+    /// The count. Used for counting.
+    /// </summary>
     public int count = 1;
+
+    /// <summary>
+    /// The dollar recogniser instance.
+    /// </summary>
     public DollarRecognizer dollarR;
 
+    /// <summary>
+    /// The saved text asset array. To be converted to saved gestures.
+    /// </summary>
     public TextAsset[] Saved;
 
+    /// <summary>
+    /// The vr player
+    /// </summary>
     public Valve.VR.InteractionSystem.Player vrPlayer;
 
+    /// <summary>
+    /// Reference to the weapon
+    /// </summary>
     public Weapon weapon;
+    /// <summary>
+    /// The shield game object.
+    /// </summary>
     public GameObject shield;
 
+    /// <summary>
+    /// The player reference.
+    /// </summary>
     public Player player;
 
+    /// <summary>
+    /// The right hand reference.
+    /// </summary>
     public Valve.VR.InteractionSystem.Hand hand;
+    /// <summary>
+    /// The left hand reference.
+    /// </summary>
     public Valve.VR.InteractionSystem.Hand leftHand;
 
+    /// <summary>
+    /// Bools for if the player is currently drawing, currently switching element and if currently equipped wand
+    /// </summary>
     public bool drawing, switching, equipped = false;
-    
+
+    /// <summary>
+    /// Starts this instance.
+    /// Sets up parsing saved gestures from saved texts.
+    /// </summary>
     void Start () {
         shield = null;
         try
@@ -48,7 +115,7 @@ public class RiftInput : MonoBehaviour {
                 print(Saved.Count());
                 foreach (TextAsset t in Saved)
                 {
-                   // print(t.name);
+                   
                     List<Vector2> parsedVectors = new List<Vector2>();
                     string parsedstring = t.text.Substring(0, t.text.Length - 1);
                     string[] stringvectors = parsedstring.Split('|');
@@ -57,7 +124,7 @@ public class RiftInput : MonoBehaviour {
 
                         string tmp = s;
                         tmp.Trim();
-                        // //print(s.Length -1);
+                        
                         tmp = s.Substring(1, s.Length - 2);
 
                         string[] sparts = tmp.Split(',');
@@ -67,7 +134,7 @@ public class RiftInput : MonoBehaviour {
                         parsedVectors.Add(parsedv);
 
                     }
-                    // savedVectorlists[count - 1] = parsedVectors;
+               
                     foreach (Vector2 v in parsedVectors)
                     {
 
@@ -88,9 +155,13 @@ public class RiftInput : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Called once a frame. 
+    /// Used for checking all inputs to the rift controller and what to do.
+    /// </summary>
     private void FixedUpdate()
     {
-       // print("Local space : " + hand.transform.localPosition);
+   
 
         if (shield != null) shieldPickup.transform.position = new Vector3(100, 100, 100);
         if (weapon != null) wandPickup.transform.position = new Vector3(100, 100, 100);
@@ -195,10 +266,9 @@ public class RiftInput : MonoBehaviour {
                 
                 drawingParticles.SetActive(true);
 
-                // Track(new Vector2(drawingParticles.transform.position.x, drawingParticles.transform.position.y));
+ 
                 Track(new Vector2(hand.transform.localPosition.x, hand.transform.localPosition.y));
-               // print("World space : " + hand.transform.position );
-               //print("Local space : " + hand.transform.localPosition);
+
 
                 drawingParticles = vrPlayer.rightHand.GetComponentInChildren<Weapon>().particleEmit;
                 
@@ -222,6 +292,10 @@ public class RiftInput : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Called once a frame.
+    /// Used for getting input and what to do with it.
+    /// </summary>
     void Update () {
 
         if (SteamVR_Input._default.inActions.Teleport.GetStateDown(SteamVR_Input_Sources.Any))
@@ -235,14 +309,14 @@ public class RiftInput : MonoBehaviour {
 
         if (triggerValue > 0.01f)
         {
-           // //print(triggerValue);
+         
         }
 
         Vector2 touchpadValue = touchPadAction.GetAxis(SteamVR_Input_Sources.Any);
 
         if(touchpadValue != Vector2.zero)
         {
-            ////print(touchpadValue);
+   
         }
         if (equipped)
         {
@@ -258,12 +332,19 @@ public class RiftInput : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Tracks the vector positions passed to the raw vector array.
+    /// </summary>
+    /// <param name="pos">The vector position.</param>
     void Track(Vector2 pos)
     {
         rawVectors.Add(pos * 1000);
-       // rawVectors.Add(pos*10000);
+
     }
 
+    /// <summary>
+    /// Checks this the vectors, and will fail the cast if the vector count is too small.
+    /// </summary>
     void Check()
     {
 
@@ -290,6 +371,9 @@ public class RiftInput : MonoBehaviour {
         
     }
 
+    /// <summary>
+    /// Saves the list of raw vectors to specified position.
+    /// </summary>
     void SaveList()
     {
         string saveString = "";
@@ -304,6 +388,10 @@ public class RiftInput : MonoBehaviour {
         count++;
     }
 
+    /// <summary>
+    /// Outputs the list of raw vectors.
+    /// </summary>
+    /// <param name="t">The t.</param>
     void OutputList(TextAsset t)
     {
         List<float> xValues = new List<float>();
@@ -316,7 +404,6 @@ public class RiftInput : MonoBehaviour {
 
             string tmp = s;
             tmp.Trim();
-            // //print(s.Length -1);
             tmp = s.Substring(1, s.Length - 2);
 
             string[] sparts = tmp.Split(',');

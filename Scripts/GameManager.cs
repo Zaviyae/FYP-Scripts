@@ -1,22 +1,52 @@
-﻿using System.Collections;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 03-29-2019
+// ***********************************************************************
+// <copyright file="GameManager.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class GameManager. Handles spawning power-up portals on a timer.
+/// </summary>
 public class GameManager : MonoBehaviour {
 
+    /// <summary>
+    /// The power-up portal prefab
+    /// </summary>
     public GameObject portalPrefab;
+    /// <summary>
+    /// The portal spawn time
+    /// </summary>
     public float portalSpawnTime;
 
+    /// <summary>
+    /// The position to spawn the portal.
+    /// </summary>
     public Transform point;
-	void Start () {
+
+    /// <summary>
+    /// Starts this instance.
+    /// </summary>
+    void Start () {
         
         StartCoroutine(RandomSpawn());
 	}
-	
-	void Update () {
-		
-	}
 
+ 
+    /// <summary>
+    /// Spawns randomly on a timer.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator RandomSpawn()
     {
         for(; ; )
@@ -30,10 +60,6 @@ public class GameManager : MonoBehaviour {
             {
                 yield return new WaitForSeconds(Random.Range(20, 80));
             }
-
-            //int randomx = Random.Range(-10, 10);
-            //Vector3 spawnLoc = new Vector3(randomx, 5.84f, 4.32f);
-
 
 
             GameObject port = Instantiate(portalPrefab, point.position, portalPrefab.transform.rotation);

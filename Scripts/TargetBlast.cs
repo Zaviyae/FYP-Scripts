@@ -192,7 +192,7 @@ public class TargetBlast : MonoBehaviour {
     }
 
     /// <summary>
-    /// Customs the object spawn.
+    /// For custom particle effect object instantiating.
     /// </summary>
     /// <param name="id">The identifier.</param>
     public void CustomObjectSpawn(int id)
@@ -203,20 +203,13 @@ public class TargetBlast : MonoBehaviour {
 
     }
 
-    /// <summary>
-    /// Updates this instance.
-    /// </summary>
-    void Update () {
-		
-	}
-
-
 
     /// <summary>
-    /// Collisions the enter.
+    /// When a collision with particle effects has been found. 
+    /// Check if it is an enemy then apply damage.
     /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
+    /// <param name="sender">The collision sender.</param>
+    /// <param name="e">The RFX script e.</param>
     private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
     {
         if (!hit && collisionDamage)
@@ -251,7 +244,7 @@ public class TargetBlast : MonoBehaviour {
     }
 
     /// <summary>
-    /// Hits this instance.
+    /// If this blast has hit the enemy.
     /// </summary>
     public void Hit()
     {
@@ -262,10 +255,8 @@ public class TargetBlast : MonoBehaviour {
 
     }
 
-
-
     /// <summary>
-    /// Damages the specified time.
+    /// Damages after the specified time.
     /// </summary>
     /// <param name="time">The time.</param>
     /// <returns>IEnumerator.</returns>

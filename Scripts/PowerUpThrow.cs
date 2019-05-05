@@ -1,21 +1,70 @@
-﻿using System.Collections;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 02-22-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 03-23-2019
+// ***********************************************************************
+// <copyright file="PowerUpThrow.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class PowerUpThrow.
+/// Attached to the power-up ball shot at the player.
+/// </summary>
 public class PowerUpThrow : MonoBehaviour {
 
+    /// <summary>
+    /// The y axis
+    /// </summary>
     public float yAxis;
+    /// <summary>
+    /// The elemental array
+    /// </summary>
     public GameObject[] elemental;
+    /// <summary>
+    /// The sphere object of this ball.
+    /// </summary>
     public GameObject sphere;
+    /// <summary>
+    /// If the ball has been thrown or has made contact with the shield.
+    /// </summary>
     public bool thrown, shieldcontact;
+    /// <summary>
+    /// The elemental identifier
+    /// </summary>
     public int elementalID;
+    /// <summary>
+    /// If the elemental spawned is random or is set.
+    /// </summary>
     public bool random,set;
+    /// <summary>
+    /// If the ball is mid-air.
+    /// </summary>
     public bool objFloat;
+    /// <summary>
+    /// The rigidbody attached to the sphere.
+    /// </summary>
     public Rigidbody rBody;
+
+    /// <summary>
+    /// Starts this instance. Finds the rigidbody attached.
+    /// </summary>
     void Start() {
         rBody = GetComponent<Rigidbody>();
     }
 
+    /// <summary>
+    /// Called once a frame. When the ball has hit the shield, the highest point of the ball will be taken before releasing an elemental. 
+    /// This object is then destroyed.
+    /// </summary>
     void Update() {
 
         if (shieldcontact)
@@ -29,7 +78,7 @@ public class PowerUpThrow : MonoBehaviour {
             if (!set)
             {
                 yAxis = transform.position.y;
-                print(yAxis + "y axis");
+ 
                 set = true;
             }
 
@@ -40,9 +89,7 @@ public class PowerUpThrow : MonoBehaviour {
             else
             {
                 
-                print(yAxis + " >< " + transform.position.y);
-                print("PEAKED HEIGHT " + yAxis);
-                //release elemental
+
                 if (!random)
                 {
                     elemental[elementalID].SetActive(true);
@@ -84,6 +131,9 @@ public class PowerUpThrow : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Sets up this ball to be shot at player.
+    /// </summary>
     public void floating()
     {
         transform.parent = null;
@@ -92,43 +142,39 @@ public class PowerUpThrow : MonoBehaviour {
         transform.localScale = new Vector3(2, 2, 2);
         objFloat = true;
     }
+    /// <summary>
+    /// If the ball has been thrown.
+    /// </summary>
     public void threw(){
 
         thrown = true;
         }
 
 
+    /// <summary>
+    /// If contact with the shield has been made.
+    /// </summary>
     public void ShieldTouch()
     {
         GetComponent<Rigidbody>().useGravity = true;
         shieldcontact = true;
         objFloat = false;
 
-        // EXPLODE
         thrown = true;
     }
 
+    /// <summary>
+    /// If contact with the shield has been made.
+    /// </summary>
+    /// <param name="x">The x.</param>
+    /// <param name="c">The c.</param>
+    /// <param name="trans">The transform.</param>
     public void ShieldTouch(float x, Collision c, Transform trans)
     {
         GetComponent<Rigidbody>().useGravity = true;
         shieldcontact = true;
         objFloat = false;
 
-  
-
-      //  print("called");
-        // force is how forcefully we will push the player away from the enemy.
-       // float force = 3000f;
-
-        // If the object we hit is the enemy
-
-        // Calculate Angle Between the collision point and the player
-     //   Vector3 dir = c.contacts[0].point + trans.position;
-        // We then get the opposite (-Vector3) and normalize it
-      //  dir = -dir.normalized;
-        // And finally we add force in the direction of dir and multiply it by force. 
-        // This will push back the player
-      //  GetComponent<Rigidbody>().AddForce(dir * force);
 
     }
 }

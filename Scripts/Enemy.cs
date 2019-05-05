@@ -1,87 +1,250 @@
-﻿
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 04-01-2019
+// ***********************************************************************
+// <copyright file="Enemy.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+/// <summary>
+/// Class Enemy. Attached to all enemies in the scene.
+/// </summary>
 public class Enemy : MonoBehaviour
 {
 
+    /// <summary>
+    /// Enemy objects nearby this one.
+    /// </summary>
     public List<GameObject> friendlies;
 
+    /// <summary>
+    /// The base health, damage
+    /// </summary>
     private int baseHealth, baseDamage;
+    /// <summary>
+    /// The current health, damage
+    /// </summary>
     public int currentHealth, currentDamage;
 
+    /// <summary>
+    /// The element type of this enemy
+    /// </summary>
     public ElementType.Type elementType;
+    /// <summary>
+    /// The hp script. Used for displaying hits
+    /// </summary>
     public HPScript hpScript;
 
+    /// <summary>
+    /// Materials available for this enemy.
+    /// </summary>
     public Material blue, red, purple;
+    /// <summary>
+    /// The nav agent attached to this enemy (used for movement.)
+    /// </summary>
     public NavMeshAgent navAgent;
+    /// <summary>
+    /// Where hit effects will spawn
+    /// </summary>
     public Transform hpSpawnLoc;
+    /// <summary>
+    /// The animator attached to this enemy.
+    /// </summary>
     public Animator anim;
+    /// <summary>
+    ///If the enemy has reached their destination
+    /// </summary>
     bool atDesination;
+    /// <summary>
+    /// The base mesh renderer
+    /// </summary>
     public SkinnedMeshRenderer baseMeshRenderer;
+    /// <summary>
+    /// The outline script
+    /// </summary>
     private Outline outlineScript;
+    /// <summary>
+    /// The shoot position (where to shoot from)
+    /// </summary>
     public GameObject shootPos;
 
+    /// <summary>
+    /// The stun circles 
+    /// </summary>
     public GameObject stunCircles;
 
+    /// <summary>
+    /// The death effect
+    /// </summary>
     public GameObject deathEffect;
 
+    /// <summary>
+    /// The dementor object (effect)
+    /// </summary>
     public GameObject dementor;
 
+    /// <summary>
+    /// The comet point
+    /// </summary>
     public Transform cometPoint;
 
+    /// <summary>
+    /// The root seconds, freeze seconds
+    /// </summary>
     public float rootSeconds, freezeSeconds;
+    /// <summary>
+    /// The target blast points
+    /// </summary>
     public Transform[] blastPoints;
 
+    /// <summary>
+    /// The target blast objects
+    /// </summary>
     public GameObject[] blastObjects;
+    /// <summary>
+    /// The elemental target blast (Skills) objects
+    /// </summary>
     public GameObject[] elementalBlastObjects;
 
+    /// <summary>
+    /// The spawn manager
+    /// </summary>
     public SpawnManager spawnManager;
+    /// <summary>
+    /// Is this enemy rooted or frozen?
+    /// </summary>
     public bool rooted = false, frozen = false;
+    /// <summary>
+    /// Is this enemy targetted by the player.
+    /// </summary>
     public bool targetted;
 
+    /// <summary>
+    /// The position to lock this enemy to.
+    /// </summary>
     public Transform lockPos;
 
+    /// <summary>
+    /// The maximum speed of this enemy.
+    /// </summary>
     public float maxSpeed;
 
+    /// <summary>
+    /// Is this enemy position locked.
+    /// </summary>
     public bool lockedOn;
+    /// <summary>
+    /// Triggers for morphing and bound effects for the enemy.
+    /// </summary>
     public bool morph, bound;
+    /// <summary>
+    /// The bound seconds
+    /// </summary>
     public float boundSeconds;
+    /// <summary>
+    /// A skill effect for water ball.
+    /// </summary>
     public GameObject waterBall;
 
-    public bool testBound;
+    /// <summary>
+    /// Has the enemy reached the distance from the player
+    /// </summary>
     public bool reachedDistance;
+    /// <summary>
+    /// The old position, old rotation
+    /// </summary>
     private Vector3 oldPos, oldRot;
 
+    /// <summary>
+    /// The launchpoint
+    /// </summary>
     public Transform LAUNCHPOINT;
 
-    //for attacking
+    /// <summary>
+    /// The spawn position
+    /// </summary>
     public Transform spawnPos;
+    /// <summary>
+    /// The shoot prefab
+    /// </summary>
     public GameObject shootPrefab;
+    /// <summary>
+    /// The player
+    /// </summary>
     private Player player;
 
 
+    /// <summary>
+    /// The shields available for the enemy.
+    /// </summary>
     public GameObject shield, overpower,elementshield, elementshieldB, elementshieldP, elementshieldR;
+  
     public bool overpowered, shielded, spawned;
 
+    /// <summary>
+    /// The brain state
+    /// </summary>
     public string BrainState = "NEUTRAL";
 
+    /// <summary>
+    /// The archer weapons
+    /// </summary>
     public GameObject[] ArcherWeapons, WarriorWeapons, WarriorShields, MageWeapons, MageShields, HealerWeapons;
+    /// <summary>
+    /// The archer heads
+    /// </summary>
     public GameObject[] ArcherHeads, WarriorHeads, MageHeads, HealerHeads;
+    /// <summary>
+    /// The archer backs
+    /// </summary>
     public GameObject[] ArcherBacks, WarriorBacks, MageBacks, HealerBacks;
 
 
+    /// <summary>
+    /// The heal effect
+    /// </summary>
     public GameObject healEffect;
 
+    /// <summary>
+    /// If this enemy is a navmesh obstacle.
+    /// </summary>
     private NavMeshObstacle obstacle;
 
+    /// <summary>
+    /// This enemy's enemy profile
+    /// </summary>
     public EnemyProfiles myProfile;
 
+    /// <summary>
+    /// The time alive
+    /// </summary>
     public int timeAlive;
+    /// <summary>
+    /// Is this a support enemy
+    /// </summary>
     public bool supportEnemy;
+    /// <summary>
+    /// Is this a nonmovingenemy
+    /// </summary>
     public bool NONMOVINGENEMY = true;
+    /// <summary>
+    /// Is this enemy dead
+    /// </summary>
     bool dead = false;
+
+    /// <summary>
+    /// Starts this instance. Sets up basic references.
+    /// </summary>
     void Start()
     {
         BrainState = "NEUTRAL";
@@ -104,6 +267,9 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Shields this enemy.
+    /// </summary>
     void Shield()
     {
         if (!shielded)
@@ -115,6 +281,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Rushes the player.
+    /// </summary>
     void RushPlayer()
     {
         navAgent.enabled = true;
@@ -124,6 +293,9 @@ public class Enemy : MonoBehaviour
         anim.SetBool("Rolling", true);
     }
 
+    /// <summary>
+    /// Cast faster , a power up.
+    /// </summary>
     void OverPower()
     {
         overpowered = true;
@@ -132,6 +304,9 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Cast fireball.
+    /// </summary>
     public void SpellTrigger()
     {
         GameObject fireball = spawnManager.fireballPool.get();
@@ -148,6 +323,9 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Handles the ai movement animation.
+    /// </summary>
     void HandleAI()
     {
 
@@ -160,6 +338,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Count down the shield seconds.
+    /// </summary>
+    /// <param name="s">The s.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator ShieldCountDown(float s)
     {
         yield return new WaitForSeconds(s);
@@ -170,6 +353,11 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Count down the over power buff seconds
+    /// </summary>
+    /// <param name="s">The s.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator OverPowerCount(float s)
     {
         yield return new WaitForSeconds(s);
@@ -179,6 +367,10 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Gets the nearby enemies from the spawn manager.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator InformCheck()
     {
         for(; ; )
@@ -190,6 +382,10 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Gets nearest enemy
+    /// </summary>
+    /// <returns>GameObject.</returns>
     public GameObject NearestEnemy()
     {
         float dist = Mathf.Infinity;
@@ -207,11 +403,19 @@ public class Enemy : MonoBehaviour
         return tempE;
     }
 
+    /// <summary>
+    /// Gets random enemy
+    /// </summary>
+    /// <returns>GameObject.</returns>
     public GameObject RandomEnemy()
     {
         return friendlies[Random.Range(0, friendlies.Count - 1)];
     }
 
+    /// <summary>
+    /// Increments time alive every second
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator AliveCount()
     {
         for(; ; )
@@ -220,6 +424,10 @@ public class Enemy : MonoBehaviour
             timeAlive++;
         }
     }
+    /// <summary>
+    /// Brain tick, handles states
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator BrainTick()
     {
         for (; ; )
@@ -403,6 +611,10 @@ public class Enemy : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Healing tick, for support enemy. heals lowest hp enemy.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator HealTick()
     {
         for(; ; )
@@ -430,6 +642,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Heals the specified health.
+    /// </summary>
+    /// <param name="health">The health.</param>
+    /// <param name="color">The color.</param>
     public void Heal(int health, Color color)
     {
         if (currentHealth <= 0) return;
@@ -441,6 +658,9 @@ public class Enemy : MonoBehaviour
         if (currentHealth > myProfile.maxHealth) currentHealth = myProfile.maxHealth;
       
     }
+    /// <summary>
+    /// Spawns the arrow.
+    /// </summary>
     public void SpawnArrow()
     {
         GameObject newProj = Instantiate(shootPrefab, spawnPos.position, spawnPos.rotation);
@@ -449,11 +669,18 @@ public class Enemy : MonoBehaviour
         newProj.GetComponent<Projectile>().Override(ElementType.Type.Purple);
     }
 
+    /// <summary>
+    /// If the position is locked on.
+    /// </summary>
     public void LockOn()
     {
         lockedOn = true;
     }
 
+    /// <summary>
+    /// Roots the enemy for s seconds
+    /// </summary>
+    /// <param name="s">The s.</param>
     public void Root(float s)
     {
         rootSeconds = s;
@@ -465,6 +692,10 @@ public class Enemy : MonoBehaviour
         anim.SetBool("Rooted", true);
     }
 
+    /// <summary>
+    /// Freezes the enemy for s seconds.
+    /// </summary>
+    /// <param name="s">The s.</param>
     public void Freeze(float s)
     {
         if (!NONMOVINGENEMY)
@@ -481,6 +712,10 @@ public class Enemy : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Airbounds the enemy for s seconds.
+    /// </summary>
+    /// <param name="s">The s.</param>
     public void Airbound(float s)
     {
         if (!bound)
@@ -502,6 +737,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///Countdown bound seconds
+    /// </summary>
+    /// <param name="s">The s.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator BoundTimer(float s)
     {
         yield return new WaitForSeconds(s);
@@ -515,6 +755,11 @@ public class Enemy : MonoBehaviour
         waterBall.SetActive(false);
     }
 
+    /// <summary>
+    /// Spawns the object.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="player">if set to <c>true</c> [player].</param>
     public void spawnObject(int id, bool player)
     {
         
@@ -525,6 +770,11 @@ public class Enemy : MonoBehaviour
         blastObjects[id].GetComponent<TargetBlast>().playerControlled = player;
     }
 
+    /// <summary>
+    /// Spawns the object.
+    /// </summary>
+    /// <param name="skill">The skill.</param>
+    /// <param name="player">if set to <c>true</c> [player].</param>
     public void spawnObject(Skill skill, bool player)
     {
         if (skill.useSkillID)
@@ -544,6 +794,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Morphes this instance.
+    /// </summary>
     public void Morph()
     {
         print("Morph!");
@@ -553,6 +806,10 @@ public class Enemy : MonoBehaviour
         ReportDeath();
     }
 
+    /// <summary>
+    /// If the enemy has reached the player
+    /// </summary>
+    /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
     protected bool pathComplete()
     {
         if (Vector3.Distance(navAgent.destination, navAgent.transform.position) <= navAgent.stoppingDistance)
@@ -567,6 +824,10 @@ public class Enemy : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Checks distance to player
+    /// </summary>
+    /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
     bool playerCheck()
     {
         if (Vector3.Distance(player.transform.position, transform.position) <= myProfile.baseDistance -1)
@@ -577,6 +838,9 @@ public class Enemy : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Called once per frame. Handled rooting, target outlines and animations.
+    /// </summary>
     void Update()
     {
    
@@ -708,6 +972,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Takes the damage passed.
+    /// </summary>
+    /// <param name="damage">The damage.</param>
+    /// <param name="color">The color.</param>
     public void TakeDamage(int damage, Color color)
     {
 
@@ -721,6 +990,11 @@ public class Enemy : MonoBehaviour
         CheckDeath();
     }
 
+    /// <summary>
+    /// Takes the damage passed of element type.
+    /// </summary>
+    /// <param name="damage">The damage.</param>
+    /// <param name="el">The el.</param>
     public void TakeDamage(int damage, ElementType.Type el)
     {
         float dF = damage;
@@ -736,6 +1010,9 @@ public class Enemy : MonoBehaviour
         CheckDeath();
     }
 
+    /// <summary>
+    /// Checks if this enemy has died.
+    /// </summary>
     void CheckDeath()
     {
         
@@ -759,11 +1036,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Reports the death to spawn manager.
+    /// </summary>
     public void ReportDeath()
     {
         spawnManager.EnemyDeceased(this.gameObject);
     }
 
+    /// <summary>
+    /// Disables all customisation objects on the enemy.
+    /// </summary>
     void disableAll()
     {
         foreach (GameObject o in ArcherWeapons)
@@ -834,6 +1117,10 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets up the enemy with all customisation and element settings.
+    /// </summary>
+    /// <param name="profile">The profile.</param>
     public void SetUp(EnemyProfiles profile)
     {
        
@@ -955,6 +1242,9 @@ public class Enemy : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// If the spawn animaton has finished, this method is triggered.
+    /// </summary>
     public void SpawnAnimFinished()
     {
         spawned = true;
@@ -971,6 +1261,9 @@ public class Enemy : MonoBehaviour
         BrainState = "NEUTRAL";
     }
 
+    /// <summary>
+    /// Sets the mesh to the element type
+    /// </summary>
     void setMesh()
     {
 
@@ -998,6 +1291,10 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Die after 2 seconds
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Die()
     {
         dead = true;
@@ -1008,6 +1305,9 @@ public class Enemy : MonoBehaviour
        
     }
 
+    /// <summary>
+    /// Triggered by the death animation.
+    /// </summary>
     public void AnimDeath()
     {
         deathEffect.SetActive(false);
@@ -1015,6 +1315,10 @@ public class Enemy : MonoBehaviour
     
     }
 
+    /// <summary>
+    /// Activates or de activates element shield.
+    /// </summary>
+    /// <param name="t">if set to <c>true</c> [t].</param>
     public void ElementShield(bool t)
     {
         elementshield.SetActive(t);

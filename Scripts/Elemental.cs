@@ -1,31 +1,87 @@
-﻿using System;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 04-01-2019
+// ***********************************************************************
+// <copyright file="Elemental.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class Elemental. For the simple AI companion to the player.
+/// </summary>
 public class Elemental : MonoBehaviour {
 
+    /// <summary>
+    /// The element type of this elemental
+    /// </summary>
     public ElementType.Type elementType;
+    /// <summary>
+    /// The enemy target
+    /// </summary>
     public GameObject target = null;
+    /// <summary>
+    /// The potential targets
+    /// </summary>
     public GameObject[] potentials;
+    /// <summary>
+    /// The filtered targets
+    /// </summary>
     public List<GameObject> filtered;
-   // GameObject proj;
-   // public Transform shootPoint;
-   // public GameObject blastPrefab;
+
+    /// <summary>
+    /// The move point
+    /// </summary>
     public Vector3 movePoint;
+    /// <summary>
+    /// The target start
+    /// </summary>
     bool targetStart;
+    /// <summary>
+    /// The player
+    /// </summary>
     public GameObject player;
+    /// <summary>
+    /// If we use a custom skill
+    /// </summary>
     public bool useCustomSkill;
+    /// <summary>
+    /// The life time
+    /// </summary>
     public float lifeTime;
+    /// <summary>
+    /// If the elemental is close to target
+    /// </summary>
     public bool close;
 
+    /// <summary>
+    /// Is flamethrower active
+    /// </summary>
     public bool flamethrower;
+    /// <summary>
+    /// The flame prefab
+    /// </summary>
     public GameObject flame;
-   // public int skillID;
+  
 
+    /// <summary>
+    /// The skills array
+    /// </summary>
     public Skill[] skills;
 
-    // Use this for initialization
+    /// <summary>
+    /// Starts this instance.
+    /// Begins co routines and randomises life time.
+    /// </summary>
     void Start () {
         flamethrower = true;
 
@@ -40,9 +96,13 @@ public class Elemental : MonoBehaviour {
         StartCoroutine(Destroy());
         StartCoroutine(FlameTick());
     }
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+ 
+    /// <summary>
+    /// Called once a frame. 
+    /// Handles movement to enemy.
+    /// </summary>
+    void FixedUpdate () {
         flame.SetActive(close);
         if (target)
         {
@@ -76,15 +136,16 @@ public class Elemental : MonoBehaviour {
         }
 	}
 
+    /// <summary>
+    /// Creates random movement for the elemental.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator RandomMove()
     {
         while (!target)
         {
             int sec = UnityEngine.Random.Range(5, 15);
  
-
-            //int randomx = Random.Range(-42, 42);
-            //int randomz = Random.Range(-1, 90);
 
             float randomx = UnityEngine.Random.Range(player.transform.position.x - 10, player.transform.position.x + 10);
             float randomz = UnityEngine.Random.Range(player.transform.position.z - 1, player.transform.position.z + 10);
@@ -96,6 +157,10 @@ public class Elemental : MonoBehaviour {
         
     }
 
+    /// <summary>
+    /// Check to see we have target every .2 seconds.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Check()
     {
         for(; ; )
@@ -112,6 +177,10 @@ public class Elemental : MonoBehaviour {
     }
 
 
+    /// <summary>
+    /// Damage tick for flame thrower effect. Applies damage to the enemy.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator FlameTick()
     {
         for (; ; )
@@ -144,6 +213,10 @@ public class Elemental : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Use custom skill on enemy.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Fire()
     {
         for (; ; )
@@ -159,8 +232,7 @@ public class Elemental : MonoBehaviour {
                 }
                 else
                 {
-                   // GameObject blast = GameObject.Instantiate(blastPrefab);
-                   // blast.GetComponent<TargetBlast>().target = target;
+
                 }
 
                 
@@ -170,6 +242,10 @@ public class Elemental : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Destroys this instance after time is up.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Destroy()
     {
         yield return new WaitForSeconds(lifeTime);
@@ -177,6 +253,9 @@ public class Elemental : MonoBehaviour {
             target.GetComponent<Enemy>().lockedOn = false;
         Destroy(gameObject);
     }
+    /// <summary>
+    /// Searches for enemies in the scene we can go to.
+    /// </summary>
     void Search()
     {
   

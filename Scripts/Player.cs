@@ -1,92 +1,274 @@
-﻿using System;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 05-05-2019
+// ***********************************************************************
+// <copyright file="Player.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Class Player.
+/// Attached to the player object.
+/// </summary>
 public class Player : MonoBehaviour {
 
+    /// <summary>
+    /// Has the game started
+    /// </summary>
     private bool gameStarted;
 
+    /// <summary>
+    /// The vr player
+    /// </summary>
     private Valve.VR.InteractionSystem.Player vrPlayer;
 
+    /// <summary>
+    /// The current score
+    /// </summary>
     public int currentScore = 0;
+    /// <summary>
+    /// The shield
+    /// </summary>
     public GameObject shield;
 
+    /// <summary>
+    /// The current enemy target
+    /// </summary>
     public GameObject target;
 
+    /// <summary>
+    /// The red skill set
+    /// </summary>
     public GameObject[] LightningSkillSet;
+    /// <summary>
+    /// The blue skill set
+    /// </summary>
     public GameObject[] WaterSkillSet;
+    /// <summary>
+    /// The purple skill set
+    /// </summary>
     public GameObject[] ForceSkillSet;
 
-   // public Dictionary<GameObject, GameObject> skillMap;
 
 
-   // private GameObject projectile;
+    /// <summary>
+    /// The wand mesh effects
+    /// </summary>
     public PSMeshRendererUpdater[] wandMeshEffects;
+    /// <summary>
+    /// The ability fail effect
+    /// </summary>
     public GameObject failEffect;
+    /// <summary>
+    /// Has the weapon been cleared of effects.
+    /// </summary>
     private bool clear;
+    /// <summary>
+    /// Rift input reference
+    /// </summary>
     public RiftInput rInput;
+    /// <summary>
+    /// The weapon reference
+    /// </summary>
     private Weapon weapon;
+    /// <summary>
+    /// An effect for the tip of the weapon, if used for this ability.
+    /// </summary>
     GameObject sEffect = null;
+    /// <summary>
+    /// The base weapon material.
+    /// </summary>
     public Material baseMat;
+    /// <summary>
+    /// Is the player currently able to cast.
+    /// </summary>
     public bool casting = false;
-    public int school = 0; 
+    /// <summary>
+    /// The current element type index
+    /// </summary>
+    public int school = 0;
 
-   // public bool canShootBullets = true;
+    /// <summary>
+    /// The neutral bullet to shoot if no cast has been made
+    /// </summary>
     public GameObject neutralBullet;
 
+    /// <summary>
+    /// The start position
+    /// </summary>
     private Vector3 startPos ;
+    /// <summary>
+    /// The teleporting
+    /// </summary>
     bool teleporting;
+    /// <summary>
+    /// The tele portal
+    /// </summary>
     Portal telePortal;
+    /// <summary>
+    /// The last portal
+    /// </summary>
     Portal lastPortal;
+    /// <summary>
+    /// The start portal
+    /// </summary>
     public Portal startPortal;
+    /// <summary>
+    /// The current portal
+    /// </summary>
     Portal currentPortal;
 
+    /// <summary>
+    /// The player view
+    /// </summary>
     public PlayerView playerView;
 
+    /// <summary>
+    /// The able to fire
+    /// </summary>
     public bool ableToFire = true;
 
+    /// <summary>
+    /// The canvas group
+    /// </summary>
     private CanvasGroup canvasGroup;
 
+    /// <summary>
+    /// The fade
+    /// </summary>
     private Valve.VR.SteamVR_Fade fade;
 
+    /// <summary>
+    /// The skill type (skill 1 , 2 or 3)
+    /// </summary>
     private int skillType = 0;
 
+    /// <summary>
+    /// The element type of the player
+    /// </summary>
     public ElementType.Type elementType;
+
+    /// <summary>
+    /// The damage modifier for abilities
+    /// </summary>
     public int damageModifier = 0;
 
+    /// <summary>
+    /// Colours to use for dead vs alive player
+    /// </summary>
     public Color alive, dead;
+    /// <summary>
+    /// The health values for the player
+    /// </summary>
     public float maxHealth, currentHealth;
 
+    /// <summary>
+    /// The shield power values for the player
+    /// </summary>
     public int shieldPower, maxshieldPower;
+    /// <summary>
+    /// Is the shield active
+    /// </summary>
     public bool shieldActive;
+    /// <summary>
+    /// The shield text element (third party)
+    /// </summary>
     public TextMeshProUGUI shieldText;
 
+    /// <summary>
+    /// The score text element (third party)
+    /// </summary>
     public TextMeshProUGUI scoreText;
 
+    /// <summary>
+    /// The tornado object
+    /// </summary>
     public GameObject tornado;
+
+    /// <summary>
+    /// The player score
+    /// </summary>
     public int score;
-    
+
+    /// <summary>
+    /// The text elements for the skills (third party)
+    /// </summary>
     public TextMeshProUGUI skill1Text, skill2Text, skill3Text;
+    /// <summary>
+    /// The image elements for the skills
+    /// </summary>
     public Image skill1Image, skill2Image, skill3Image;
 
+    /// <summary>
+    /// The player health bar image
+    /// </summary>
     private Image playerHealthBar;
+    /// <summary>
+    /// The UI text classes for each element type
+    /// </summary>
     public SchoolTexts redTexts, blueTexts, purpleTexts;
+    /// <summary>
+    /// The available abilities
+    /// </summary>
     List<Ability> abilities;
+    /// <summary>
+    /// All element type abilities.
+    /// </summary>
     Ability Skill1,Skill2,Skill3,RedSkill1,RedSkill2,RedSkill3,PurpleSkill1,PurpleSkill2,PurpleSkill3,BlueSkill1,BlueSkill2,BlueSkill3;
 
+    /// <summary>
+    /// Class Ability.
+    /// </summary>
     class Ability
     {
+        /// <summary>
+        /// The cooldown
+        /// </summary>
         public int cooldown;
+        /// <summary>
+        /// The skill name
+        /// </summary>
         public String skillName;
+        /// <summary>
+        /// Available or not.
+        /// </summary>
         public bool available;
+        /// <summary>
+        /// The current cooldown time.
+        /// </summary>
         public int currentcooldowntime;
+        /// <summary>
+        /// Ability level
+        /// </summary>
         public int level;
+        /// <summary>
+        /// Current and max exp
+        /// </summary>
         public float exp, maxExp;
+        /// <summary>
+        /// The base damage
+        /// </summary>
         public int baseDamage;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Ability"/> class.
+        /// </summary>
+        /// <param name="cooldown">The cooldown.</param>
+        /// <param name="skillName">Name of the skill.</param>
+        /// <param name="maxExp">The maximum exp.</param>
+        /// <param name="damage">The damage.</param>
         public Ability(int cooldown, String skillName, float maxExp, int damage)
         {
             this.cooldown = cooldown;
@@ -96,6 +278,10 @@ public class Player : MonoBehaviour {
 
         }
 
+        /// <summary>
+        /// Adds exp. Levels up if max exp reached.
+        /// </summary>
+        /// <param name="e">The e.</param>
         public void addExp(float e)
         {
             exp += e;
@@ -110,9 +296,19 @@ public class Player : MonoBehaviour {
 
      
     }
+    /// <summary>
+    /// The player hit box.
+    /// </summary>
     public GameObject hitBox, followHead;
+    /// <summary>
+    /// The spawn manager reference
+    /// </summary>
     public SpawnManager spawnManager;
 
+    /// <summary>
+    /// Starts this instance.
+    /// Sets all abilities and their UI elements as well as all character base variables such as current portal and health.
+    /// </summary>
     void Start () {
         scoreText = null;
         Skill1 = new Ability(60, "Tornado", 1000, 2); //0 in list
@@ -177,6 +373,11 @@ public class Player : MonoBehaviour {
         
 	}
 
+    /// <summary>
+    /// Ran every 1 second, decreases the cooldown on unavailable skills until their cooldown is 0, when they are made available again.
+    /// Handles UI to reflect cooldowns.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Cooldowns()
     {
         for(; ; )
@@ -282,6 +483,12 @@ public class Player : MonoBehaviour {
             }
         }
     }
+
+    /// <summary>
+    /// Calculates the damage of an ability.
+    /// </summary>
+    /// <param name="abilityName">Name of the ability.</param>
+    /// <returns>System.Int32.</returns>
     public int calcDamage(String abilityName)
     {
         //float baseModifier = 1f;
@@ -297,28 +504,12 @@ public class Player : MonoBehaviour {
         }
         return 0;
 
-        /*
-        switch (num)
-        {
-            case 1:       
-                return Mathf.RoundToInt(GlobalVariables.BASE_ONE_DAMAGE + (currentScore - 5));
-                
-            case 2:
-
-                return Mathf.RoundToInt(GlobalVariables.BASE_TWO_DAMAGE * (baseModifier + ((currentScore - 5) / 10f)));
-                
-            case 3:
-
-                return Mathf.RoundToInt(GlobalVariables.BASE_THREE_DAMAGE * (baseModifier + ((currentScore - 5) / 10f)));
-                
-            default:
-
-                return 0;
-        }
-        */
     }
 
-	public void Teleport()
+    /// <summary>
+    /// Teleports to the looked at portal in the player view.
+    /// </summary>
+    public void Teleport()
     {
         if (playerView.getPortal())
         {
@@ -345,12 +536,20 @@ public class Player : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Adds score.
+    /// </summary>
+    /// <param name="s">The s.</param>
     public void AddScore(int s)
     {
         if (s < 0) return;
         score += s;
     }
 
+    /// <summary>
+    /// Manages displaying the score on the UI staggered.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator ScoreTally()
     {
         for(; ; )
@@ -366,7 +565,12 @@ public class Player : MonoBehaviour {
         }
     }
 
-	void Update () {
+    /// <summary>
+    /// Ran once a second, checks for teleport input.
+    /// Handles health Ui image.
+    /// Handles teleport movement.
+    /// </summary>
+    void Update () {
         if (weapon) { weapon.modeText.text = elementType.ToString(); }
        
         if(!gameStarted && weapon && shield)
@@ -446,6 +650,11 @@ public class Player : MonoBehaviour {
         
 	}
 
+    /// <summary>
+    /// Reports any hit to the player or their shield.
+    /// </summary>
+    /// <param name="spellID">The spell identifier.</param>
+    /// <param name="hit">The hit.</param>
     public void ReportHit(int spellID, RaycastHit hit)
     {
         if(hit.transform.tag == "Shield")
@@ -463,6 +672,10 @@ public class Player : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Checks which beam to cast, and informs the Weapon script.
+    /// </summary>
+    /// <param name="t">if set to <c>true</c> [t].</param>
     public void Beam(bool t)
     {
         if (ableToFire && casting)
@@ -501,6 +714,9 @@ public class Player : MonoBehaviour {
             weapon.EndBeam();
     }
 
+    /// <summary>
+    /// If the player is able to shoot, this method handles retreiving which ability to cast.
+    /// </summary>
     public void Fire()
     {
  
@@ -651,6 +867,11 @@ public class Player : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Adds exp to abilities.
+    /// </summary>
+    /// <param name="a">a.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator abilityScore(Ability a)
     {
 
@@ -661,6 +882,12 @@ public class Player : MonoBehaviour {
         
     }
 
+    /// <summary>
+    /// Hits a nearby enemy. Used for blast skills.
+    /// </summary>
+    /// <param name="blast">The blast.</param>
+    /// <param name="target">The target.</param>
+    /// <param name="jumps">The jumps.</param>
     public void HitNearby(GameObject blast, GameObject target, int jumps)
     {
 
@@ -668,6 +895,9 @@ public class Player : MonoBehaviour {
     
     }
 
+    /// <summary>
+    /// Use the tornado skill.
+    /// </summary>
     public void TornadoSkill()
     {
         if (Skill1.available)
@@ -687,6 +917,13 @@ public class Player : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Calculates enemy hit for the specified blast.
+    /// </summary>
+    /// <param name="blast">The blast.</param>
+    /// <param name="target">The target.</param>
+    /// <param name="jumps">The jumps.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator Hit(GameObject blast, GameObject target, int jumps)
     {
 
@@ -708,14 +945,22 @@ public class Player : MonoBehaviour {
 
 
     }
-    
 
+
+    /// <summary>
+    /// Takes the damage passed.
+    /// </summary>
+    /// <param name="damage">The damage.</param>
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
 
     }
 
+    /// <summary>
+    /// Fires the specified bullet.
+    /// </summary>
+    /// <param name="bullet">if set to <c>true</c> [bullet].</param>
     public void Fire(bool bullet)
     {
         //for firing bullets when no spell is chosen
@@ -734,11 +979,19 @@ public class Player : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// After a cast, waits for time before the player can cast again.
+    /// </summary>
+    /// <param name="time">The time.</param>
+    /// <returns>IEnumerator.</returns>
     IEnumerator FireTime(float time)
     {
         yield return new WaitForSeconds(time);
         ableToFire = true;
     }
+    /// <summary>
+    /// Clears all spells and weapon effects.
+    /// </summary>
     public void ClearSpell()
     {
         Beam(false);
@@ -750,7 +1003,10 @@ public class Player : MonoBehaviour {
         clear = true;
     }
 
-    
+
+    /// <summary>
+    /// Clears all weapon renderers.
+    /// </summary>
     void clearRenders()
     {
         
@@ -778,7 +1034,11 @@ public class Player : MonoBehaviour {
 
         
     }
-    
+
+    /// <summary>
+    /// Shields up.
+    /// </summary>
+    /// <param name="t">if set to <c>true</c> [t].</param>
     public void ShieldUp(bool t)
     {
         if (t)
@@ -798,6 +1058,10 @@ public class Player : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Handles shield power.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     IEnumerator PowerShield()
     {
         for (; ;){
@@ -830,6 +1094,9 @@ public class Player : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// This method is called if the ability has failed for what ever reason. Spawns the fail effect.
+    /// </summary>
     public void CastSpell()
     {
         try
@@ -841,7 +1108,6 @@ public class Player : MonoBehaviour {
         {
             print("failed for some reason");
         }
-       // clearRenders();
 
         clear = false;
         if (sEffect) Destroy(sEffect);
@@ -853,20 +1119,21 @@ public class Player : MonoBehaviour {
         Vector3 resetPos = new Vector3(0, 0, 0);
         sEffect.transform.localPosition = resetPos;
     }
+    /// <summary>
+    /// Casts the ability if it has succeeded. This method matches the gesture to the skill and does the appropriate action.
+    /// </summary>
+    /// <param name="result">The result.</param>
     public void CastSpell(DollarRecognizer.Result result)
     {
 
         bool t = true;
         clear = false;
-       // clearRenders();
         if (!weapon) weapon = rInput.weapon;
         weapon.beaming = false;
         print(result.Match.Name.Substring(0,1));
 
-       // print("Actual score = " + result.Score);
         float distfromOne = 1 - result.Score;
 
-       // print("Score : " + Mathf.Round(distfromOne * 10));
 
         currentScore = (int)Mathf.Round(distfromOne * 10);
 
@@ -954,21 +1221,7 @@ public class Player : MonoBehaviour {
         {
 
             weapon.UpdateMesh(elementType, false);
-            /*
-            try
-            {
-                weapon.transform.GetComponentInChildren<MeshRenderer>().material = baseMat;
-                weapon.transform.GetComponentInChildren<MeshRenderer>().materials[0] = baseMat;
-            }
-            catch (Exception e)
-            {
-                print("failed for some reason");
-            }
-            foreach (PSMeshRendererUpdater g in wandMeshEffects)
-            {
-                g.transform.gameObject.SetActive(false);
-            }
-            */
+
             sEffect = GameObject.Instantiate(failEffect, weapon.particleComplete.transform);
             print("Score too low");
         }
@@ -978,8 +1231,11 @@ public class Player : MonoBehaviour {
 
     }
 
-    
 
+
+    /// <summary>
+    /// If the time on the beam seconds has finished, clear all abilities and weapon.
+    /// </summary>
     public void BeamTimed()
     {
         ClearSpell();
@@ -988,6 +1244,9 @@ public class Player : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Cycles through the element types. Referred to as "schools"
+    /// </summary>
     public void IncrementSkillMode()
     {
         currentScore = 0;
@@ -1008,6 +1267,9 @@ public class Player : MonoBehaviour {
         AssignElement();
     }
 
+    /// <summary>
+    /// Assigns the elementtype to the weapon mesh and effects.
+    /// </summary>
     public void AssignElement()
     {
         redTexts.gameObject.SetActive(false);

@@ -1,21 +1,31 @@
-﻿using System;
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 03-29-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 03-29-2019
+// ***********************************************************************
+// <copyright file="GetTrigger.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class GetTrigger. Helper script to report when a trigger has made contact.
+/// </summary>
 public class GetTrigger : MonoBehaviour {
-    public bool flameTick;
-    Enemy enemy;
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
+
+    /// <summary>
+    /// Called when [trigger enter].
+    /// </summary>
+    /// <param name="other">The other.</param>
     private void OnTriggerEnter(Collider other)
     {
     
@@ -31,13 +41,11 @@ public class GetTrigger : MonoBehaviour {
     }
 
 
-    private void OnTriggerExit(Collider other)
-    {
 
-
-
-    }
-
+    /// <summary>
+    /// Called when [collision enter].
+    /// </summary>
+    /// <param name="other">The other.</param>
     private void OnCollisionEnter(Collision other)
     {
   
@@ -51,8 +59,6 @@ public class GetTrigger : MonoBehaviour {
       
     
         if (other.transform.tag == "Ball")
-        {
-            print("got BALL!! " + other.relativeVelocity.magnitude);
             PowerUpThrow put = null;
 
             put = other.gameObject.GetComponent<PowerUpThrow>();
@@ -67,4 +73,4 @@ public class GetTrigger : MonoBehaviour {
     }
 
 
-}
+

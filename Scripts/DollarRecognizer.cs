@@ -1,49 +1,109 @@
-﻿
+﻿// ***********************************************************************
+// Assembly         : 
+// Author           : zaviy
+// Created          : 02-19-2019
+//
+// Last Modified By : zaviy
+// Last Modified On : 04-01-2019
+// ***********************************************************************
+// <copyright file="DollarRecognizer.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+
 
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Class DollarRecognizer. Implementation of the $1 recognizer.
+/// </summary>
 public class DollarRecognizer : MonoBehaviour
 {
+    /// <summary>
+    /// Class Unistroke.
+    /// </summary>
     public class Unistroke
     {
+        /// <summary>
+        /// The example index
+        /// </summary>
         public int ExampleIndex;
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
         public string Name { get; private set; }
+        /// <summary>
+        /// Gets the points.
+        /// </summary>
+        /// <value>The points.</value>
         public Vector2[] Points { get; private set; }
+        /// <summary>
+        /// Gets the angle.
+        /// </summary>
+        /// <value>The angle.</value>
         public float Angle { get; private set; }
+        /// <summary>
+        /// Gets the vector.
+        /// </summary>
+        /// <value>The vector.</value>
         public List<float> Vector { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Unistroke"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="points">The points.</param>
         public Unistroke(string name, IEnumerable<Vector2> points)
         {
             Name = string.Intern(name);
             Vector2[] tmp = (Vector2[])points;
-            //print("LENGTH OF POINTS " + tmp.Length);
             Points = DollarRecognizer.resample(points, _kNormalizedPoints);
-            //print("LENGTH AFTER RESAMPLE " + Points.Length);
             Angle = DollarRecognizer.indicativeAngle(Points);
             DollarRecognizer.rotateBy(Points, -Angle);
-            //print("LENGTH AFTER ROTATION " + Points.Length);
             DollarRecognizer.scaleTo(Points, _kNormalizedSize);
-            //print("LENGTH AFTER SCALE " + Points.Length);
             DollarRecognizer.translateTo(Points, Vector2.zero);
-            //print("LENGTH AFTER TRASNSLATION " + Points.Length);
             Vector = DollarRecognizer.vectorize(Points);
-            //print("LENGTH AFTER VECTORIZE " + Points.Length);
+  
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return string.Format("{0} #{1}", Name, ExampleIndex);
         }
     }
 
+    /// <summary>
+    /// Struct Result
+    /// </summary>
     public struct Result
     {
+        /// <summary>
+        /// The match
+        /// </summary>
         public Unistroke Match;
+        /// <summary>
+        /// The score
+        /// </summary>
         public float Score;
+        /// <summary>
+        /// The angle
+        /// </summary>
         public float Angle;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Result"/> struct.
+        /// </summary>
+        /// <param name="match">The match.</param>
+        /// <param name="score">The score.</param>
+        /// <param name="angle">The angle.</param>
         public Result(Unistroke match, float score, float angle)
         {
             Match = match;
@@ -51,6 +111,10 @@ public class DollarRecognizer : MonoBehaviour
             Angle = angle;
         }
 
+        /// <summary>
+        /// Gets none.
+        /// </summary>
+        /// <value>The none.</value>
         public static Result None
         {
             get
@@ -59,12 +123,20 @@ public class DollarRecognizer : MonoBehaviour
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()
         {
             return string.Format("{0} @{2} ({1})", Match, Score, Angle);
         }
     }
 
+    /// <summary>
+    /// Enumerates the gestures.
+    /// </summary>
+    /// <returns>System.String[].</returns>
     public string[] EnumerateGestures()
     {
         List<string> result = new List<string>();
@@ -79,22 +151,55 @@ public class DollarRecognizer : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// The k normalized points
+    /// </summary>
     protected const int _kNormalizedPoints = 128;  //64
+    /// <summary>
+    /// The k normalized size
+    /// </summary>
     protected const float _kNormalizedSize = 256.0f;  //256
+    /// <summary>
+    /// The k angle range
+    /// </summary>
     protected const float _kAngleRange = 45.0f * Mathf.Deg2Rad;
+    /// <summary>
+    /// The k angle precision
+    /// </summary>
     protected const float _kAnglePrecision = 2.0f * Mathf.Deg2Rad;
+    /// <summary>
+    /// The k diagonal
+    /// </summary>
     protected static readonly float _kDiagonal = (Vector2.one * _kNormalizedSize).magnitude;
+    /// <summary>
+    /// The k half diagonal
+    /// </summary>
     protected static readonly float _kHalfDiagonal = _kDiagonal * 0.5f;
 
+    /// <summary>
+    /// The library
+    /// </summary>
     protected List<Unistroke> _library;
+    /// <summary>
+    /// The library index
+    /// </summary>
     protected Dictionary<string, List<int>> _libraryIndex;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref=".DollarRecognizer"/> class.
+    /// </summary>
     public DollarRecognizer()
     {
         _library = new List<Unistroke>();
         _libraryIndex = new Dictionary<string, List<int>>();
     }
 
+    /// <summary>
+    /// Saves the pattern.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="points">The points.</param>
+    /// <returns>Unistroke.</returns>
     public Unistroke SavePattern(string name, IEnumerable<Vector2> points)
     {
         Unistroke stroke = new Unistroke(name, points);
@@ -116,6 +221,11 @@ public class DollarRecognizer : MonoBehaviour
         return stroke;
     }
 
+    /// <summary>
+    /// Recognizes the specified points.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>Result.</returns>
     public Result Recognize(IEnumerable<Vector2> points)
     {
         //print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<RECOGNIZE GESTURE>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -177,6 +287,12 @@ public class DollarRecognizer : MonoBehaviour
             return new Result(_library[bestIndex], bestDist, (_library[bestIndex].Angle - angle) * Mathf.Rad2Deg);
     }
 
+    /// <summary>
+    /// Resamples the specified points.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="targetCount">The target count.</param>
+    /// <returns>Vector2[].</returns>
     protected static Vector2[] resample(IEnumerable<Vector2> points, int targetCount)
     {
         
@@ -226,6 +342,11 @@ public class DollarRecognizer : MonoBehaviour
         return result.ToArray();
     }
 
+    /// <summary>
+    /// Centroids the specified points.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>Vector2.</returns>
     protected static Vector2 centroid(Vector2[] points)
     {
         Vector2 result = Vector2.zero;
@@ -239,12 +360,22 @@ public class DollarRecognizer : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Indicatives the angle.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>System.Single.</returns>
     protected static float indicativeAngle(Vector2[] points)
     {
         Vector2 delta = centroid(points) - points[0];
         return Mathf.Atan2(delta.y, delta.x);
     }
 
+    /// <summary>
+    /// Rotates the by.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="angle">The angle.</param>
     protected static void rotateBy(Vector2[] points, float angle)
     {
         Vector2 c = centroid(points);
@@ -260,6 +391,11 @@ public class DollarRecognizer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Boundings the box.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>Rect.</returns>
     protected static Rect boundingBox(Vector2[] points)
     {
         Rect result = new Rect();
@@ -279,6 +415,11 @@ public class DollarRecognizer : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Scales to.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="normalizedSize">Size of the normalized.</param>
     protected static void scaleTo(Vector2[] points, float normalizedSize)
     {
         //print("SCALE PASSED POINTS");
@@ -300,6 +441,11 @@ public class DollarRecognizer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Translates to.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="newCentroid">The new centroid.</param>
     protected static void translateTo(Vector2[] points, Vector2 newCentroid)
     {
         Vector2 c = centroid(points);
@@ -311,6 +457,11 @@ public class DollarRecognizer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Vectorizes the specified points.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>List&lt;System.Single&gt;.</returns>
     protected static List<float> vectorize(Vector2[] points)
     {
         float sum = 0;
@@ -332,29 +483,22 @@ public class DollarRecognizer : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Optimals the cosine distance.
+    /// </summary>
+    /// <param name="v1">The v1.</param>
+    /// <param name="v2">The v2.</param>
+    /// <returns>System.Single.</returns>
     protected static float optimalCosineDistance(List<float> v1, List<float> v2)
     {
 
-        foreach( float f in v1)
-        {
-          //  //print(f);
-        }
 
-        foreach (float f in v2)
-        {
-          //  //print(f);
-        }
         if (v1.Count != v2.Count)
         {
-            //print("WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            //print(v1.Count + " - " + v2.Count);
+
             return float.NaN;
         }
-        else
-        {
-            //print(v1.Count + " - " + v2.Count);
-            //print("IT WAS SAME");
-        }
+
         
         float a = 0;
         float b = 0;
@@ -364,16 +508,21 @@ public class DollarRecognizer : MonoBehaviour
             a += (v1[i] * v2[i]) + (v1[i + 1] * v2[i + 1]);
             b += (v1[i] * v2[i + 1]) - (v1[i + 1] * v2[i]);
         }
-        //print("A = " + a);
-        //print("B = " + b);
+
         
         float angle = Mathf.Atan(b / a);
         float result = Mathf.Acos((a * Mathf.Cos(angle)) + (b * Mathf.Sin(angle)));
-        
-        //print("COSIGN RESULT :" + result);
+
         return result;
     }
 
+    /// <summary>
+    /// Distances at angle.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="test">The test.</param>
+    /// <param name="angle">The angle.</param>
+    /// <returns>System.Single.</returns>
     protected static float distanceAtAngle(Vector2[] points, Unistroke test, float angle)
     {
         Vector2[] rotated = new Vector2[points.Length];
@@ -381,6 +530,12 @@ public class DollarRecognizer : MonoBehaviour
         return pathDistance(rotated, test.Points);
     }
 
+    /// <summary>
+    /// Pathes the distance.
+    /// </summary>
+    /// <param name="pts1">The PTS1.</param>
+    /// <param name="pts2">The PTS2.</param>
+    /// <returns>System.Single.</returns>
     protected static float pathDistance(Vector2[] pts1, Vector2[] pts2)
     {
         if (pts1.Length != pts2.Length)
@@ -395,6 +550,11 @@ public class DollarRecognizer : MonoBehaviour
         return result / (float)pts1.Length;
     }
 
+    /// <summary>
+    /// Pathes the length.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <returns>System.Single.</returns>
     protected static float pathLength(IEnumerable<Vector2> points)
     {
         float result = 0;
