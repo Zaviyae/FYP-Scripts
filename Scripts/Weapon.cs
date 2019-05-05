@@ -95,7 +95,8 @@ public class Weapon : MonoBehaviour {
     /// </summary>
     public float textureLengthScale = 3; //Length of the beam texture
 
-
+    public Text modeText;
+    public GameObject particleComplete;
 
     /// <summary>
     /// Each individual start, end and middle beam prefab for every element type.

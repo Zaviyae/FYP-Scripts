@@ -19,7 +19,8 @@ using UnityEngine;
 /// <summary>
 /// Class GetTrigger. Helper script to report when a trigger has made contact.
 /// </summary>
-public class GetTrigger : MonoBehaviour {
+public class GetTrigger : MonoBehaviour
+{
 
 
     /// <summary>
@@ -28,15 +29,15 @@ public class GetTrigger : MonoBehaviour {
     /// <param name="other">The other.</param>
     private void OnTriggerEnter(Collider other)
     {
-    
-        if(other.tag == "Ball")
+
+        if (other.tag == "Ball")
         {
             print("got ball! ");
             PowerUpThrow put = other.GetComponentInParent<PowerUpThrow>();
             put.ShieldTouch();
         }
 
-    
+
 
     }
 
@@ -48,7 +49,7 @@ public class GetTrigger : MonoBehaviour {
     /// <param name="other">The other.</param>
     private void OnCollisionEnter(Collision other)
     {
-  
+
         print(other.transform.tag);
         if (other.transform.tag == "Shield")
         {
@@ -56,21 +57,23 @@ public class GetTrigger : MonoBehaviour {
             PowerUpThrow put = GetComponent<PowerUpThrow>();
             put.ShieldTouch();
         }
-      
-    
-        if (other.transform.tag == "Ball")
-            PowerUpThrow put = null;
 
-            put = other.gameObject.GetComponent<PowerUpThrow>();
-            print(put);
+
+        if (other.transform.tag == "Ball")
+        {
+            PowerUpThrow putt = null;
+
+            putt = other.gameObject.GetComponent<PowerUpThrow>();
+            print(putt);
             print(other.relativeVelocity.magnitude);
             print(other);
             print(transform);
-            put.ShieldTouch(other.relativeVelocity.magnitude, other, transform);
+            putt.ShieldTouch(other.relativeVelocity.magnitude, other, transform);
         }
 
 
     }
+}
 
 
 

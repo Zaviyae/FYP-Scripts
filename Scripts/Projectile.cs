@@ -153,5 +153,7 @@ public class Projectile : MonoBehaviour {
 
 
     }
+    private void CollisionEnter(object sender, RFX4_PhysicsMotion.RFX4_CollisionInfo e)
+    { }
 
-}
+    }
